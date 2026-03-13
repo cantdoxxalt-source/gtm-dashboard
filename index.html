@@ -267,6 +267,59 @@
             </div>
         </div>
         
+        <!-- Daily Tasks Panel -->
+        <div class="panel" style="margin-bottom: 30px;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    ✅ Daily Content Tasks
+                    <span style="font-size: 12px; color: #94a3b8; font-weight: 400;">Non-negotiable business activity</span>
+                </div>
+                <button class="btn btn-primary" onclick="generateDailyContent()">Generate Today's Pack</button>
+            </div>
+            <div class="panel-content">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #818cf8;">2</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Tweets to Post</div>
+                    </div>
+                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #818cf8;">2</div>
+                        <div style="font-size: 12px; color: #94a3b8;">LinkedIn Posts</div>
+                    </div>
+                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #c084fc;">20</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Tweets to Engage</div>
+                    </div>
+                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #c084fc;">20</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Reddit Posts</div>
+                    </div>
+                </div>
+                
+                <div id="daily-content-tabs" style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #312e81; padding-bottom: 10px;">
+                    <button class="tab-btn active" onclick="showTab('tweets')" style="background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🐦 Tweets</button>
+                    <button class="tab-btn" onclick="showTab('linkedin')" style="background: transparent; color: #94a3b8; border: 1px solid #312e81; padding: 8px 16px; border-radius: 6px; cursor: pointer;">💼 LinkedIn</button>
+                    <button class="tab-btn" onclick="showTab('engage-tweets')" style="background: transparent; color: #94a3b8; border: 1px solid #312e81; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🎯 Engage Tweets</button>
+                    <button class="tab-btn" onclick="showTab('engage-reddit')" style="background: transparent; color: #94a3b8; border: 1px solid #312e81; padding: 8px 16px; border-radius: 6px; cursor: pointer;">📱 Engage Reddit</button>
+                </div>
+                
+                <div id="tab-content">
+                    <div id="tweets-tab" class="tab-panel">
+                        <div id="tweets-list"></div>
+                    </div>
+                    <div id="linkedin-tab" class="tab-panel" style="display: none;">
+                        <div id="linkedin-list"></div>
+                    </div>
+                    <div id="engage-tweets-tab" class="tab-panel" style="display: none;">
+                        <div id="engage-tweets-list"></div>
+                    </div>
+                    <div id="engage-reddit-tab" class="tab-panel" style="display: none;">
+                        <div id="engage-reddit-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Grid -->
         <div class="main-grid">
             <!-- Reddit Monitor -->
@@ -457,6 +510,237 @@
                 logContainer.removeChild(logContainer.lastChild);
             }
         }
+        
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            
+            // Show selected panel
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            
+            // Update button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = '#94a3b8';
+                btn.style.border = '1px solid #312e81';
+            });
+            event.target.style.background = '#6366f1';
+            event.target.style.color = 'white';
+            event.target.style.border = 'none';
+        }
+        
+        // Generate Daily Content
+        async function generateDailyContent() {
+            addLogEntry('Generating daily content pack...');
+            
+            try {
+                const response = await fetch(`${API_URL}/content/daily-pack`);
+                const data = await response.json();
+                
+                renderTweets(data.tweets);
+                renderLinkedIn(data.linkedin);
+                renderEngageTweets(data.engageTweets);
+                renderEngageReddit(data.engageReddit);
+                
+                addLogEntry('Daily content pack generated');
+            } catch (error) {
+                // Fallback to static content if API fails
+                loadStaticContent();
+                addLogEntry('Loaded static content (API unavailable)');
+            }
+        }
+        
+        // Render functions
+        function renderTweets(tweets) {
+            const container = document.getElementById('tweets-list');
+            container.innerHTML = tweets.map((tweet, i) => `
+                <div class="reddit-post" style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <span style="background: #1d4ed8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Tweet ${i + 1}</span>
+                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(tweet.content)}')" style="padding: 4px 12px; font-size: 11px;">Copy</button>
+                    </div>
+                    <div style="white-space: pre-wrap; font-size: 14px; line-height: 1.5;">${tweet.content}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderLinkedIn(posts) {
+            const container = document.getElementById('linkedin-list');
+            container.innerHTML = posts.map((post, i) => `
+                <div class="reddit-post" style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <span style="background: #0077b5; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">LinkedIn ${i + 1}</span>
+                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(post.content)}')" style="padding: 4px 12px; font-size: 11px;">Copy</button>
+                    </div>
+                    <div style="white-space: pre-wrap; font-size: 14px; line-height: 1.5;">${post.content}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderEngageTweets(targets) {
+            const container = document.getElementById('engage-tweets-list');
+            container.innerHTML = targets.map((target, i) => `
+                <div class="reddit-post" style="margin-bottom: 10px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 13px;">${target.handle}</span>
+                        <a href="${target.url}" target="_blank" style="color: #6366f1; font-size: 12px;">Open →</a>
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px; line-height: 1.4;">${target.preview}</div>
+                    <div style="background: #1e1b2e; padding: 8px; border-radius: 6px; font-size: 12px; color: #c7c3ff; border-left: 3px solid #6366f1;">
+                        <strong>Draft:</strong> ${target.draftReply}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderEngageReddit(targets) {
+            const container = document.getElementById('engage-reddit-list');
+            container.innerHTML = targets.map((target, i) => `
+                <div class="reddit-post" style="margin-bottom: 10px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 13px; color: #ff4500;">r/${target.subreddit}</span>
+                        <a href="${target.url}" target="_blank" style="color: #6366f1; font-size: 12px;">Open →</a>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px;">${target.title}</div>
+                    <div style="background: #1e1b2e; padding: 8px; border-radius: 6px; font-size: 12px; color: #c7c3ff; border-left: 3px solid #ff4500;">
+                        <strong>Draft:</strong> ${target.draftReply}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(decodeURIComponent(text));
+            addLogEntry('Copied to clipboard');
+        }
+        
+        // Load static content (fallback)
+        function loadStaticContent() {
+            const tweets = [
+                {
+                    content: `SEO in 2026:
+
+❌ Hiring expensive agencies
+❌ Manual keyword research  
+❌ Guessing what works
+
+✅ AI agents that execute 24/7
+✅ Data-driven decisions
+✅ Predictable results
+
+The shift is happening. Are you in?`
+                },
+                {
+                    content: `Most people do SEO wrong.
+
+They focus on tactics.
+I focus on systems.
+
+Here's what my AI SEO agent does 24/7:
+
+• Finds keywords
+• Analyzes competitors  
+• Creates content briefs
+• Tracks rankings
+• Sends me reports
+
+Cost: $73/month
+
+Time I spend: 2 hours/week
+
+Systems > Hustle`
+                }
+            ];
+            
+            const linkedin = [
+                {
+                    content: `I replaced a $2,000/month SEO agency with a $73/month AI agent.
+
+Here's the breakdown:
+
+BEFORE:
+• $2,000/month agency fees
+• 10 hours/week managing them
+• Unclear what they actually did
+• Reports that said "we're working on it"
+
+AFTER:
+• $73/month in API costs (DataForSEO, OpenAI, etc.)
+• 2 hours/week oversight
+• Full transparency on every action
+• Real-time dashboards
+
+What the AI agent does:
+✓ Monitors 500+ keywords daily
+✓ Tracks 5 competitors' backlinks
+✓ Generates content briefs
+✓ Runs technical audits
+✓ Sends me a daily summary
+
+The results after 90 days:
+📈 3x organic traffic
+📈 47 new keywords on page 1
+📈 12 qualified demo requests
+
+The lesson?
+
+Don't pay humans to do what AI can do better, faster, and cheaper.
+
+Pay humans for strategy. Let AI handle execution.
+
+What's your take on AI in marketing?`
+                },
+                {
+                    content: `Unpopular opinion: SEO agencies are dying.
+
+Not because SEO is dead.
+Because the model is broken.
+
+Here's why:
+
+1️⃣ They charge $2K+ for $200 in tools
+   The margin is in manual work. AI eliminates manual work.
+
+2️⃣ They take 30 days to deliver what AI does in 30 minutes
+   Speed is the new moat.
+
+3️⃣ They hide behind "proprietary processes"
+   It's not magic. It's automation.
+
+4️⃣ They can't scale without hiring
+   AI scales infinitely.
+
+The agencies that will survive:
+→ Focus on strategy, not execution
+→ Use AI to deliver 10x the value
+→ Charge for thinking, not doing
+
+The rest?
+They'll be replaced by founders running $73/month AI agents.
+
+I'm not saying this to be harsh.
+I'm saying it because I built that AI agent.
+
+And I'm not the only one.
+
+The shift is happening. Which side are you on?`
+                }
+            ];
+            
+            renderTweets(tweets);
+            renderLinkedIn(linkedin);
+            
+            document.getElementById('engage-tweets-list').innerHTML = '<div class="empty-state"><p>Click "Generate Today\'s Pack" to load engagement targets</p></div>';
+            document.getElementById('engage-reddit-list').innerHTML = '<div class="empty-state"><p>Click "Generate Today\'s Pack" to load engagement targets</p></div>';
+        }
+        
+        // Initialize with static content
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStaticContent();
+        });
     </script>
 </body>
 </html>
