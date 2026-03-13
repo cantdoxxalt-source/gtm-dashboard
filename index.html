@@ -3,661 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTM Automation Dashboard</title>
+    <title>Daily GTM Tasks</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0a0f;
             color: #e2e8f0;
             min-height: 100vh;
+            padding: 20px;
         }
-        
         .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
             background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            padding: 20px 30px;
-            border-bottom: 1px solid #3730a3;
+            border-radius: 16px;
+            border: 1px solid #3730a3;
         }
-        
         .header h1 {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             background: linear-gradient(90deg, #818cf8, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
-        
-        .header p {
-            color: #94a3b8;
-            margin-top: 5px;
-            font-size: 14px;
+        .header p { color: #94a3b8; font-size: 14px; }
+        .date-display { color: #6366f1; font-weight: 600; margin-top: 10px; }
+        .progress-bar {
+            background: #1e1b2e;
+            border-radius: 12px;
+            padding: 4px;
+            margin: 20px auto;
+            max-width: 600px;
+            border: 1px solid #312e81;
         }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
+        .progress-fill {
+            height: 24px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
         }
-        
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto 30px;
         }
-        
         .stat-card {
             background: #1e1b2e;
             border: 1px solid #312e81;
             border-radius: 12px;
             padding: 20px;
-            transition: transform 0.2s, border-color 0.2s;
+            text-align: center;
         }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: #6366f1;
+        .stat-value { font-size: 32px; font-weight: 700; color: #818cf8; }
+        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #312e81;
+            padding-bottom: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        
-        .stat-label {
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #312e81;
+            background: transparent;
             color: #94a3b8;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-        
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #fff;
-            margin-top: 8px;
+        .tab-btn:hover { border-color: #6366f1; color: #c7c3ff; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
         }
-        
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .panel {
+        .tab-content { max-width: 900px; margin: 0 auto; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .task-item {
             background: #1e1b2e;
             border: 1px solid #312e81;
             border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .panel-header {
-            background: #252342;
-            padding: 15px 20px;
-            border-bottom: 1px solid #312e81;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .panel-content {
             padding: 20px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        
-        .reddit-post {
-            background: #252342;
-            border: 1px solid #3730a3;
-            border-radius: 10px;
-            padding: 15px;
             margin-bottom: 15px;
+            transition: all 0.2s;
         }
-        
-        .post-header {
+        .task-item:hover { border-color: #6366f1; }
+        .task-item.completed {
+            opacity: 0.5;
+            border-color: #22c55e;
+        }
+        .task-item.completed .task-content { text-decoration: line-through; }
+        .task-header {
             display: flex;
-            justify-content: space-between;
             align-items: start;
-            margin-bottom: 10px;
-        }
-        
-        .post-title {
-            font-weight: 600;
-            color: #fff;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        .post-meta {
-            display: flex;
             gap: 15px;
-            font-size: 12px;
-            color: #94a3b8;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
-        
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #6366f1;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .checkbox:hover { background: #312e81; }
+        .checkbox.checked {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+        .task-content { flex: 1; }
+        .task-title { font-weight: 600; font-size: 15px; margin-bottom: 5px; }
+        .task-preview { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-left: 39px;
+        }
         .btn {
             padding: 8px 16px;
-            border-radius: 8px;
+            border-radius: 6px;
             border: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
-        
         .btn-primary {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
         }
-        
-        .btn-secondary {
-            background: #312e81;
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: #312e81; color: #c7c3ff; }
+        .btn-secondary:hover { background: #3730a3; }
+        .draft-box {
+            background: #0f0d1a;
+            border: 1px solid #312e81;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            margin-left: 39px;
+            font-size: 13px;
             color: #c7c3ff;
+            line-height: 1.5;
+            border-left: 3px solid #6366f1;
         }
-        
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-dot.active {
-            background: #4ade80;
-        }
-        
-        .status-dot.error {
-            background: #f87171;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .log-entry {
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid #312e81;
-            color: #94a3b8;
-        }
-        
-        .log-time {
+        .draft-label {
+            font-size: 11px;
             color: #6366f1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
         }
-        
-        .empty-state {
+        .generate-btn {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 30px auto;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        .completion-message {
             text-align: center;
             padding: 40px;
-            color: #64748b;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 16px;
+            border: 1px solid #22c55e;
+            margin-top: 30px;
+            display: none;
         }
-        
-        .api-status {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
+        .completion-message.show { display: block; }
+        .completion-message h2 { color: #22c55e; font-size: 24px; margin-bottom: 10px; }
+        .reset-btn {
+            background: transparent;
+            border: 1px solid #6366f1;
+            color: #6366f1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
         }
-        
-        .api-status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .reset-btn:hover { background: #312e81; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🚀 GTM Automation Dashboard</h1>
-        <p>Unified view of your Reddit monitoring, leads, and analytics</p>
+        <h1>🚀 Daily GTM Tasks</h1>
+        <p>Non-negotiable business activity. Complete all tasks daily.</p>
+        <div class="date-display" id="current-date"></div>
     </div>
     
-    <div class="container">
-        <!-- API Status -->
-        <div class="api-status">
-            <div class="api-status-item">
-                <span class="status-dot" id="api-status-dot"></span>
-                <span id="api-status-text">Checking API...</span>
-            </div>
-            <div class="api-status-item">
-                <span class="status-dot" id="reddit-status-dot"></span>
-                <span id="reddit-status-text">Reddit Monitor</span>
-            </div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="stat-tweets">0/2</div>
+            <div class="stat-label">Tweets Posted</div>
         </div>
-        
-        <!-- Stats Row -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Leads</div>
-                <div class="stat-value" id="total-leads">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Emails Sent</div>
-                <div class="stat-value" id="emails-sent">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Reddit Opportunities</div>
-                <div class="stat-value" id="reddit-opps">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Hot Leads</div>
-                <div class="stat-value" id="hot-leads">-</div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-linkedin">0/2</div>
+            <div class="stat-label">LinkedIn Posts</div>
         </div>
-        
-        <!-- Daily Tasks Panel -->
-        <div class="panel" style="margin-bottom: 30px;">
-            <div class="panel-header">
-                <div class="panel-title">
-                    ✅ Daily Content Tasks
-                    <span style="font-size: 12px; color: #94a3b8; font-weight: 400;">Non-negotiable business activity</span>
-                </div>
-                <button class="btn btn-primary" onclick="generateDailyContent()">Generate Today's Pack</button>
-            </div>
-            <div class="panel-content">
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700; color: #818cf8;">2</div>
-                        <div style="font-size: 12px; color: #94a3b8;">Tweets to Post</div>
-                    </div>
-                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700; color: #818cf8;">2</div>
-                        <div style="font-size: 12px; color: #94a3b8;">LinkedIn Posts</div>
-                    </div>
-                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700; color: #c084fc;">20</div>
-                        <div style="font-size: 12px; color: #94a3b8;">Tweets to Engage</div>
-                    </div>
-                    <div class="task-stat" style="background: #252342; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700; color: #c084fc;">20</div>
-                        <div style="font-size: 12px; color: #94a3b8;">Reddit Posts</div>
-                    </div>
-                </div>
-                
-                <div id="daily-content-tabs" style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #312e81; padding-bottom: 10px;">
-                    <button class="tab-btn active" onclick="showTab('tweets')" style="background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🐦 Tweets</button>
-                    <button class="tab-btn" onclick="showTab('linkedin')" style="background: transparent; color: #94a3b8; border: 1px solid #312e81; padding: 8px 16px; border-radius: 6px; cursor: pointer;">💼 LinkedIn</button>
-                    <button class="tab-btn" onclick="showTab('engage-tweets')" style="background: transparent; color: #94a3b8; border: 1px solid #312e81; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🎯 Engage Tweets</button>
-                    <button class="tab-btn" onclick="showTab('engage-reddit')" style="background: transparent; color: #94a3b8; border: 1px solid #312e81; padding: 8px 16px; border-radius: 6px; cursor: pointer;">📱 Engage Reddit</button>
-                </div>
-                
-                <div id="tab-content">
-                    <div id="tweets-tab" class="tab-panel">
-                        <div id="tweets-list"></div>
-                    </div>
-                    <div id="linkedin-tab" class="tab-panel" style="display: none;">
-                        <div id="linkedin-list"></div>
-                    </div>
-                    <div id="engage-tweets-tab" class="tab-panel" style="display: none;">
-                        <div id="engage-tweets-list"></div>
-                    </div>
-                    <div id="engage-reddit-tab" class="tab-panel" style="display: none;">
-                        <div id="engage-reddit-list"></div>
-                    </div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-tweet-eng">0/20</div>
+            <div class="stat-label">Tweets Engaged</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-reddit">0/20</div>
+            <div class="stat-label">Reddit Posts</div>
+        </div>
+    </div>
+    
+    <button class="generate-btn" onclick="generateDailyContent()">
+        🎲 Generate Today's Unique Content Pack
+    </button>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('tweets')">🐦 Tweets to Post (2)</button>
+        <button class="tab-btn" onclick="showTab('linkedin')">💼 LinkedIn (2)</button>
+        <button class="tab-btn" onclick="showTab('engage-tweets')">🎯 Engage Tweets (20)</button>
+        <button class="tab-btn" onclick="showTab('engage-reddit')">📱 Engage Reddit (20)</button>
+    </div>
+    
+    <div class="tab-content">
+        <div id="tweets-tab" class="tab-panel active"></div>
+        <div id="linkedin-tab" class="tab-panel"></div>
+        <div id="engage-tweets-tab" class="tab-panel"></div>
+        <div id="engage-reddit-tab" class="tab-panel"></div>
+    </div>
+    
+    <div class="completion-message" id="completion-message">
+        <h2>🎉 All Tasks Complete!</h2>
+        <p>You've finished your non-negotiable daily GTM activities.</p>
+        <p style="color: #94a3b8; margin-top: 10px;">Come back tomorrow for fresh content.</p>
+        <button class="reset-btn" onclick="resetAllTasks()">Reset for Testing</button>
+    </div>
 
-        <!-- Main Grid -->
-        <div class="main-grid">
-            <!-- Reddit Monitor -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">
-                        🔍 Reddit Opportunities
-                    </div>
-                    <button class="btn btn-secondary" onclick="refreshReddit()">Refresh</button>
-                </div>
-                <div class="panel-content" id="reddit-posts">
-                    <div class="empty-state">
-                        <div style="font-size: 48px; margin-bottom: 15px;">🔍</div>
-                        <p>Loading Reddit opportunities...</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right Column -->
-            <div>
-                <!-- Leads Panel -->
-                <div class="panel" style="margin-bottom: 30px;">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            👥 Recent Leads
-                        </div>
-                        <button class="btn btn-secondary" onclick="refreshLeads()">Refresh</button>
-                    </div>
-                    <div class="panel-content" id="leads-list">
-                        <div class="empty-state">
-                            <p>Loading leads...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Activity Log -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            📋 Activity Log
-                        </div>
-                    </div>
-                    <div class="panel-content" id="activity-log">
-                        <div class="log-entry">
-                            <span class="log-time">--:--</span> Dashboard initialized
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <script>
-        // API Configuration
-        const API_URL = 'https://gtm-public-api.vercel.app';
+        // Content templates
+        const tweetTemplates = [
+            { type: 'hot_take', templates: [
+                "SEO agencies are dying.\n\nNot because SEO is dead.\nBecause AI agents do it better, faster, cheaper.\n\nThe smart agencies pivot to strategy.\nThe rest become obsolete.\n\nWhich side are you on?",
+                "Your SEO agency charges $2K/month.\n\nMy AI agent costs $73.\n\nThey take 30 days to deliver.\nMy agent works 24/7.\n\nThey hide behind 'proprietary processes.'\nMy code is transparent.\n\nThe math is simple.",
+                "Most founders waste $2K+/month on SEO agencies.\n\nI spend $73 on APIs.\n\nThe secret?\nAI agents handle execution.\nI focus on strategy.\n\nSystems > Hustle"
+            ]},
+            { type: 'educational', templates: [
+                "Here's how I cut SEO costs by 96%:\n\n❌ Before: $2K/month agency\n✅ After: $73/month APIs\n\nThe 5 tools I use:\n• DataForSEO\n• OpenAI API\n• SERP API\n• Make.com\n• Google Sheets\n\nThread 🧵",
+                "SEO in 2026:\n\n❌ Hiring expensive agencies\n❌ Manual keyword research\n❌ Guessing what works\n\n✅ AI agents that execute 24/7\n✅ Data-driven decisions\n✅ Predictable results\n\nThe shift is happening. Are you in?",
+                "Most people do SEO wrong.\n\nThey focus on tactics.\nI focus on systems.\n\nMy AI agent:\n• Finds keywords\n• Analyzes competitors\n• Creates briefs\n• Tracks rankings\n• Sends reports\n\nCost: $73/month\nMy time: 2 hrs/week"
+            ]},
+            { type: 'results', templates: [
+                "Results from my AI SEO agent (90 days):\n\n📈 3x organic traffic\n📈 47 new page 1 rankings\n📈 12 qualified demos\n\nCost: $73/month\nTime spent: 2 hrs/week\n\nROI: 27x\n\nSometimes less is more.",
+                "Before vs After AI SEO:\n\n❌ Before:\n• 10 hrs/week on SEO\n• $2K/month fees\n• Unclear results\n\n✅ After:\n• 2 hrs/week oversight\n• $73/month costs\n• 5x more output\n\nThe math is simple.",
+                "My client paid $2K/month for SEO.\n\nI replaced it with a $73 AI agent.\n\n90 days later:\n• 3x organic traffic\n• 50+ new rankings\n• 12 qualified leads\n\nAgencies hate this one simple trick."
+            ]}
+        ];
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAPIStatus();
-            loadDashboard();
-            
-            // Auto-refresh every 30 seconds
-            setInterval(() => {
-                loadDashboard();
-            }, 30000);
-        });
-        
-        // Check API Status
-        async function checkAPIStatus() {
-            try {
-                const response = await fetch(`${API_URL}/health`);
-                if (response.ok) {
-                    document.getElementById('api-status-dot').className = 'status-dot active';
-                    document.getElementById('api-status-text').textContent = 'API Online';
-                } else {
-                    throw new Error('API Error');
-                }
-            } catch (error) {
-                document.getElementById('api-status-dot').className = 'status-dot error';
-                document.getElementById('api-status-text').textContent = 'API Offline';
-            }
-        }
-        
-        // Load Dashboard Data
-        async function loadDashboard() {
-            await Promise.all([
-                loadAnalytics(),
-                loadLeads(),
-                loadRedditPosts()
-            ]);
-        }
-        
-        // Load Analytics
-        async function loadAnalytics() {
-            try {
-                const response = await fetch(`${API_URL}/analytics/dashboard`);
-                const data = await response.json();
-                
-                document.getElementById('total-leads').textContent = data.total_leads || 0;
-                document.getElementById('emails-sent').textContent = data.emails_sent || 0;
-                document.getElementById('hot-leads').textContent = data.hot_leads?.length || 0;
-                
-                addLogEntry(`Dashboard updated: ${data.total_leads} leads`);
-            } catch (error) {
-                console.error('Failed to load analytics:', error);
-            }
-        }
-        
-        // Load Leads
-        async function loadLeads() {
-            try {
-                const response = await fetch(`${API_URL}/leads?limit=5`);
-                const leads = await response.json();
-                
-                const container = document.getElementById('leads-list');
-                
-                if (leads.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <p>No leads yet. Start your outreach campaign!</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = leads.map(lead => `
-                    <div class="reddit-post">
-                        <div class="post-header">
-                            <div class="post-title">${lead.first_name} ${lead.last_name}</div>
-                        </div>
-                        <div class="post-meta">
-                            <span>📧 ${lead.email}</span>
-                            <span>🏢 ${lead.company}</span>
-                            <span>⭐ Score: ${lead.score || 0}</span>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Failed to load leads:', error);
-            }
-        }
-        
-        // Load Reddit Posts (simulated - would come from your backend)
-        async function loadRedditPosts() {
-            // This would fetch from your Reddit monitor
-            // For now, show placeholder
-            const container = document.getElementById('reddit-posts');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div style="font-size: 48px; margin-bottom: 15px;">🔍</div>
-                    <p>Run the Reddit monitor to see opportunities here</p>
-                    <p style="margin-top: 10px; font-size: 12px;">
-                        <code>python reddit_public_monitor.py</code>
-                    </p>
-                </div>
-            `;
-            
-            document.getElementById('reddit-opps').textContent = '0';
-            document.getElementById('reddit-status-dot').className = 'status-dot active';
-        }
-        
-        // Refresh Functions
-        function refreshReddit() {
-            addLogEntry('Refreshing Reddit data...');
-            loadRedditPosts();
-        }
-        
-        function refreshLeads() {
-            addLogEntry('Refreshing leads...');
-            loadLeads();
-        }
-        
-        // Add Log Entry
-        function addLogEntry(message) {
-            const now = new Date();
-            const time = now.getHours().toString().padStart(2, '0') + ':' + 
-                        now.getMinutes().toString().padStart(2, '0');
-            
-            const logContainer = document.getElementById('activity-log');
-            const newEntry = document.createElement('div');
-            newEntry.className = 'log-entry';
-            newEntry.innerHTML = `<span class="log-time">${time}</span> ${message}`;
-            
-            logContainer.insertBefore(newEntry, logContainer.firstChild);
-            
-            // Keep only last 20 entries
-            while (logContainer.children.length > 20) {
-                logContainer.removeChild(logContainer.lastChild);
-            }
-        }
-        
-        // Tab switching
-        function showTab(tabName) {
-            // Hide all panels
-            document.querySelectorAll('.tab-panel').forEach(panel => {
-                panel.style.display = 'none';
-            });
-            
-            // Show selected panel
-            document.getElementById(tabName + '-tab').style.display = 'block';
-            
-            // Update button styles
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.style.background = 'transparent';
-                btn.style.color = '#94a3b8';
-                btn.style.border = '1px solid #312e81';
-            });
-            event.target.style.background = '#6366f1';
-            event.target.style.color = 'white';
-            event.target.style.border = 'none';
-        }
-        
-        // Generate Daily Content
-        async function generateDailyContent() {
-            addLogEntry('Generating daily content pack...');
-            
-            try {
-                const response = await fetch(`${API_URL}/content/daily-pack`);
-                const data = await response.json();
-                
-                renderTweets(data.tweets);
-                renderLinkedIn(data.linkedin);
-                renderEngageTweets(data.engageTweets);
-                renderEngageReddit(data.engageReddit);
-                
-                addLogEntry('Daily content pack generated');
-            } catch (error) {
-                // Fallback to static content if API fails
-                loadStaticContent();
-                addLogEntry('Loaded static content (API unavailable)');
-            }
-        }
-        
-        // Render functions
-        function renderTweets(tweets) {
-            const container = document.getElementById('tweets-list');
-            container.innerHTML = tweets.map((tweet, i) => `
-                <div class="reddit-post" style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <span style="background: #1d4ed8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Tweet ${i + 1}</span>
-                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(tweet.content)}')" style="padding: 4px 12px; font-size: 11px;">Copy</button>
-                    </div>
-                    <div style="white-space: pre-wrap; font-size: 14px; line-height: 1.5;">${tweet.content}</div>
-                </div>
-            `).join('');
-        }
-        
-        function renderLinkedIn(posts) {
-            const container = document.getElementById('linkedin-list');
-            container.innerHTML = posts.map((post, i) => `
-                <div class="reddit-post" style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <span style="background: #0077b5; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">LinkedIn ${i + 1}</span>
-                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(post.content)}')" style="padding: 4px 12px; font-size: 11px;">Copy</button>
-                    </div>
-                    <div style="white-space: pre-wrap; font-size: 14px; line-height: 1.5;">${post.content}</div>
-                </div>
-            `).join('');
-        }
-        
-        function renderEngageTweets(targets) {
-            const container = document.getElementById('engage-tweets-list');
-            container.innerHTML = targets.map((target, i) => `
-                <div class="reddit-post" style="margin-bottom: 10px; padding: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                        <span style="font-weight: 600; font-size: 13px;">${target.handle}</span>
-                        <a href="${target.url}" target="_blank" style="color: #6366f1; font-size: 12px;">Open →</a>
-                    </div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px; line-height: 1.4;">${target.preview}</div>
-                    <div style="background: #1e1b2e; padding: 8px; border-radius: 6px; font-size: 12px; color: #c7c3ff; border-left: 3px solid #6366f1;">
-                        <strong>Draft:</strong> ${target.draftReply}
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function renderEngageReddit(targets) {
-            const container = document.getElementById('engage-reddit-list');
-            container.innerHTML = targets.map((target, i) => `
-                <div class="reddit-post" style="margin-bottom: 10px; padding: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                        <span style="font-weight: 600; font-size: 13px; color: #ff4500;">r/${target.subreddit}</span>
-                        <a href="${target.url}" target="_blank" style="color: #6366f1; font-size: 12px;">Open →</a>
-                    </div>
-                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px;">${target.title}</div>
-                    <div style="background: #1e1b2e; padding: 8px; border-radius: 6px; font-size: 12px; color: #c7c3ff; border-left: 3px solid #ff4500;">
-                        <strong>Draft:</strong> ${target.draftReply}
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(decodeURIComponent(text));
-            addLogEntry('Copied to clipboard');
-        }
-        
-        // Load static content (fallback)
-        function loadStaticContent() {
-            const tweets = [
-                {
-                    content: `SEO in 2026:
-
-❌ Hiring expensive agencies
-❌ Manual keyword research  
-❌ Guessing what works
-
-✅ AI agents that execute 24/7
-✅ Data-driven decisions
-✅ Predictable results
-
-The shift is happening. Are you in?`
-                },
-                {
-                    content: `Most people do SEO wrong.
-
-They focus on tactics.
-I focus on systems.
-
-Here's what my AI SEO agent does 24/7:
-
-• Finds keywords
-• Analyzes competitors  
-• Creates content briefs
-• Tracks rankings
-• Sends me reports
-
-Cost: $73/month
-
-Time I spend: 2 hours/week
-
-Systems > Hustle`
-                }
-            ];
-            
-            const linkedin = [
-                {
-                    content: `I replaced a $2,000/month SEO agency with a $73/month AI agent.
+        const linkedinTemplates = [
+            { type: 'story', content: `I replaced a $2,000/month SEO agency with a $73/month AI agent.
 
 Here's the breakdown:
 
@@ -668,9 +311,9 @@ BEFORE:
 • Reports that said "we're working on it"
 
 AFTER:
-• $73/month in API costs (DataForSEO, OpenAI, etc.)
+• $73/month in API costs
 • 2 hours/week oversight
-• Full transparency on every action
+• Full transparency
 • Real-time dashboards
 
 What the AI agent does:
@@ -678,23 +321,21 @@ What the AI agent does:
 ✓ Tracks 5 competitors' backlinks
 ✓ Generates content briefs
 ✓ Runs technical audits
-✓ Sends me a daily summary
+✓ Sends daily summaries
 
-The results after 90 days:
+Results after 90 days:
 📈 3x organic traffic
 📈 47 new keywords on page 1
 📈 12 qualified demo requests
 
 The lesson?
 
-Don't pay humans to do what AI can do better, faster, and cheaper.
+Don't pay humans to do what AI can do better.
 
 Pay humans for strategy. Let AI handle execution.
 
-What's your take on AI in marketing?`
-                },
-                {
-                    content: `Unpopular opinion: SEO agencies are dying.
+What's your take on AI in marketing?` },
+            { type: 'hot_take', content: `Unpopular opinion: SEO agencies are dying.
 
 Not because SEO is dead.
 Because the model is broken.
@@ -702,7 +343,7 @@ Because the model is broken.
 Here's why:
 
 1️⃣ They charge $2K+ for $200 in tools
-   The margin is in manual work. AI eliminates manual work.
+   The margin is manual work. AI eliminates that.
 
 2️⃣ They take 30 days to deliver what AI does in 30 minutes
    Speed is the new moat.
@@ -713,82 +354,334 @@ Here's why:
 4️⃣ They can't scale without hiring
    AI scales infinitely.
 
-The agencies that will survive:
+The agencies that survive:
 → Focus on strategy, not execution
-→ Use AI to deliver 10x the value
+→ Use AI to deliver 10x value
 → Charge for thinking, not doing
 
 The rest?
-They'll be replaced by founders running $73/month AI agents.
+Replaced by founders with $73/month AI agents.
 
-I'm not saying this to be harsh.
-I'm saying it because I built that AI agent.
+I'm not being harsh.
+I'm being honest.
 
-And I'm not the only one.
+I built that AI agent.
 
-The shift is happening. Which side are you on?`
+The shift is happening. Which side are you on?` }
+        ];
+        
+        let currentTasks = {};
+        const totalTasks = 44;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('current-date').textContent = today;
+            
+            const savedDate = localStorage.getItem('gtm-content-date');
+            const savedContent = localStorage.getItem('gtm-content');
+            const savedProgress = localStorage.getItem('gtm-progress');
+            
+            if (savedDate === new Date().toDateString() && savedContent) {
+                currentTasks = JSON.parse(savedContent);
+                renderAllContent();
+                if (savedProgress) {
+                    const progress = JSON.parse(savedProgress);
+                    Object.keys(progress).forEach(id => {
+                        if (progress[id]) markComplete(id, false);
+                    });
                 }
-            ];
+            } else {
+                generateDailyContent();
+            }
+        });
+        
+        function generateDailyContent() {
+            const date = new Date();
+            const dateSeed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
             
-            renderTweets(tweets);
-            renderLinkedIn(linkedin);
+            // Generate 2 unique tweets
+            const tweets = [];
+            const usedTemplates = new Set();
             
-            // Load all 20 tweet engagement targets
-            const engageTweets = [
-                {handle: "@AniSingh63477", url: "https://x.com/AniSingh63477/status/2032500814783353201", preview: "Google just turned Maps into an AI travel agent. With Gemini Ask Maps, you can say: 'Find a quiet coffee shop with good Wi-Fi.' Instead of links, AI recommends a few places. The shift: Search results → AI decisions.", draftReply: "This is exactly why I'm betting on AI-first SEO. The game is changing from ranking #1 to being the AI's recommended answer."},
-                {handle: "@sarimmzia", url: "https://x.com/sarimmzia/status/2032500645396426833", preview: "My thoughts: Google SEO is still most important than anything, also to get cited in AI. AEO is simply SEO, just need more improvement in content structure and topical authority.", draftReply: "Agreed. AEO is just SEO evolved. The fundamentals (authority, structure, relevance) still matter - just applied to AI contexts."},
-                {handle: "@MintManu", url: "https://x.com/MintManu/status/2032500631647252894", preview: "SEO in 5 languages = 5 chances to rank. GEO in 5 languages = 5 chances to be recommended by AI. Most European companies have done the first. Almost none consider the second.", draftReply: "GEO is the new international SEO. Companies sleeping on this will wake up to AI assistants recommending their competitors."},
-                {handle: "@MoeBisher", url: "https://x.com/MoeBisher/status/2032500558544896390", preview: "Marketing agencies used to: 'Want me to boost your Google Maps rating?' Soon: 'Want me to boost your brand's visibility in Gemini's Google Maps recommendations?'", draftReply: "The agencies that pivot to AI optimization will thrive. The ones still selling old-school SEO will disappear."},
-                {handle: "@itshaazique", url: "https://x.com/itshaazique/status/2032500340306890880", preview: "The real unlock here isn't just Claude. It's combining AI + programmatic SEO + distribution loops. That's where the compounding starts. AI builder here 👋", draftReply: "This is my exact stack. AI for content, programmatic for scale, distribution for reach. The compounding is real."},
-                {handle: "@bestSEOpodcast", url: "https://x.com/bestSEOpodcast/status/2032500183397790063", preview: "Major copyright cases around AI are moving through federal courts right now. The big question: what limits should exist on AI platforms training on copyrighted material?", draftReply: "Watching this closely. The outcome will determine if small players can still compete or if AI becomes a big-tech monopoly."},
-                {handle: "@optimindaidigit", url: "https://x.com/optimindaidigit/status/2032500028854653169", preview: "Your customers are searching on Google… can they find you? If not, your competitors are getting those customers. SEO helps small businesses get discovered.", draftReply: "100%. Organic > Paid for sustainable growth. Especially when you can automate 80% of the SEO work now."},
-                {handle: "Search: 'SEO help'", url: "https://x.com/search?q=SEO%20help&f=live", preview: "Live search for people asking SEO questions - refresh to find new opportunities", draftReply: "Happy to help! What specifically are you struggling with? I've automated most of my SEO with AI agents - might have some insights."},
-                {handle: "Search: 'AI SEO'", url: "https://x.com/search?q=AI%20SEO&f=live", preview: "Live search for AI + SEO conversations - find people discussing AI-powered SEO", draftReply: "Built an AI SEO agent that replaced my $2K/month agency. Cost: $73/month. Happy to share the framework if you're interested."},
-                {handle: "Search: 'SEO agency'", url: "https://x.com/search?q=SEO%20agency&f=live", preview: "Live search for agency discussions - find people talking about SEO agencies", draftReply: "I replaced my SEO agency with an AI agent. $2K → $73/month. Same results, full transparency. The agency model is being disrupted."},
-                {handle: "Search: 'marketing automation'", url: "https://x.com/search?q=marketing%20automation&f=live", preview: "Live search for marketing automation discussions", draftReply: "Marketing automation is table stakes now. The real edge is AI agents that execute 24/7 without human bottlenecks."},
-                {handle: "Search: 'small business marketing'", url: "https://x.com/search?q=small%20business%20marketing&f=live", preview: "Live search for small business marketing help", draftReply: "Small businesses can now compete with enterprises on SEO using AI agents. $73/month vs $2K+ agency fees. Game changer."},
-                {handle: "Search: 'content marketing'", url: "https://x.com/search?q=content%20marketing&f=live", preview: "Live search for content marketing discussions", draftReply: "Content marketing at scale is now possible with AI. I generate 25+ pieces/month with 2 hours of oversight."},
-                {handle: "Search: 'lead generation'", url: "https://x.com/search?q=lead%20generation&f=live", preview: "Live search for lead generation discussions", draftReply: "SEO + AI = inbound lead generation on autopilot. My best leads come from organic search, not paid ads."},
-                {handle: "Search: 'digital marketing'", url: "https://x.com/search?q=digital%20marketing&f=live", preview: "Live search for digital marketing conversations", draftReply: "Digital marketing is becoming AI marketing. The winners are those who embrace automation, not those who resist it."},
-                {handle: "@troyseo", url: "https://x.com/search?q=from%3Atroyseo&f=live", preview: "Troy's latest SEO insights - always valuable engagement opportunity", draftReply: "Troy always dropping gems. This aligns with what I'm seeing - AI is changing SEO faster than most realize."},
-                {handle: "@naval", url: "https://x.com/search?q=from%3Anaval%20AI&f=live", preview: "Naval's thoughts on AI - high-value engagement for visibility", draftReply: "AI doesn't just augment work, it replaces entire workflows. Marketing is being rewritten in real-time."},
-                {handle: "@levelsio", url: "https://x.com/search?q=from%3Alevelsio%20SEO&f=live", preview: "Pieter Levels discussing SEO/building in public - great for engagement", draftReply: "Building in public + SEO automation is a cheat code. I document my AI SEO journey and get leads from it."},
-                {handle: "Search: 'SEO tools'", url: "https://x.com/search?q=SEO%20tools&f=live", preview: "Live search for SEO tools discussions", draftReply: "Built my own SEO tool stack for $73/month using APIs. Replaces $500+/month in subscriptions."},
-                {handle: "Search: 'AI automation'", url: "https://x.com/search?q=AI%20automation&f=live", preview: "Live search for AI automation conversations", draftReply: "AI automation isn't the future, it's the present. I'm already running marketing campaigns 24/7 without human intervention."}
-            ];
+            for (let i = 0; i < 2; i++) {
+                let template;
+                do {
+                    const typeIdx = Math.floor(seededRandom(dateSeed + i) * tweetTemplates.length);
+                    const type = tweetTemplates[typeIdx];
+                    const tmplIdx = Math.floor(seededRandom(dateSeed + i + 100) * type.templates.length);
+                    template = type.templates[tmplIdx];
+                } while (usedTemplates.has(template) && usedTemplates.size < 6);
+                
+                usedTemplates.add(template);
+                tweets.push({
+                    id: `tweet-${i}`,
+                    content: template,
+                    platform: 'Twitter',
+                    type: i === 0 ? 'Tweet 1' : 'Tweet 2'
+                });
+            }
             
-            // Load all 20 Reddit engagement targets
-            const engageReddit = [
-                {subreddit: "smallbusiness", title: "Best web design steps for a small retail shop?", url: "https://www.reddit.com/r/smallbusiness/comments/1rsqk9e/best_web_design_steps_for_a_small_retail_shop/", draftReply: "Don't forget SEO in your design phase. Clean URLs, fast loading, mobile-first. I built an AI agent that audits sites for these - happy to check yours if helpful."},
-                {subreddit: "smallbusiness", title: "Anyone cold calling and want to create a support group", url: "https://www.reddit.com/r/smallbusiness/comments/1rsizsa/anyone_colded_calling_and_want_to_create_a/", draftReply: "Cold calling is tough. Have you considered warming up leads first with content/SEO? I replaced cold outreach with inbound - game changer."},
-                {subreddit: "smallbusiness", title: "How are custom software dev agencies booking free discovery calls in 2026?", url: "https://www.reddit.com/r/smallbusiness/comments/1rsa2x3/how_are_custom_software_dev_agencies_booking_free/", draftReply: "SEO + content. I get discovery calls from people who read my posts about AI SEO. They come pre-sold. Way better than cold outreach."},
-                {subreddit: "smallbusiness", title: "Dear SEO company vultures — please stop emailing small businesses with your trash", url: "https://www.reddit.com/r/smallbusiness/comments/1rrz5ly/dear_seo_company_vultures_please_stop_emailing/", draftReply: "This is why I built my own AI SEO agent. $73/month vs $2K agency fees. No vultures, full transparency. Happy to share the setup."},
-                {subreddit: "smallbusiness", title: "Growing a small Interior Architecture Firm", url: "https://www.reddit.com/r/smallbusiness/comments/1rrlbg0/growing_a_small_interior_architecture_firm/", draftReply: "Visual businesses kill it on Pinterest + Instagram SEO. Also Google Business Profile optimization. I automated most of this - DM if you want the framework."},
-                {subreddit: "smallbusiness", title: "Struggling to make money!", url: "https://www.reddit.com/r/smallbusiness/comments/1rrk0jq/struggling_to_make_money/", draftReply: "What's your current customer acquisition strategy? SEO can be a goldmine for local businesses if done right."},
-                {subreddit: "Entrepreneur", title: "Technical Reading List", url: "https://www.reddit.com/r/Entrepreneur/comments/1rsnhl9/technical_reading_list/", draftReply: "Add 'The Automatic Customer' by John Warrillow. Changed how I think about building systems vs hustling."},
-                {subreddit: "Entrepreneur", title: "How many of you resort to paid marketing for their B2C business?", url: "https://www.reddit.com/r/Entrepreneur/comments/1rrpg4z/how_many_of_you_resort_to_paid_marketing_for/", draftReply: "Used to spend $5K/month on ads. Switched to SEO/content with AI automation. Now spend $73/month on APIs. Same results, better margins."},
-                {subreddit: "Entrepreneur", title: "How do I market an app while I wait for development?", url: "https://www.reddit.com/r/Entrepreneur/comments/1rrkyus/how_do_i_market_an_app_while_i_wait_for/", draftReply: "Start SEO now. Content takes 3-6 months to rank. Build authority before launch. I can share my content automation setup if helpful."},
-                {subreddit: "Entrepreneur", title: "Everyone make fun of me for building a world clock app but!....", url: "https://www.reddit.com/r/Entrepreneur/comments/1rri6x5/everyone_make_fun_of_me_for_building_a_world/", draftReply: "Haters gonna hate. Ship it. The best marketing is launching and iterating."},
-                {subreddit: "Entrepreneur", title: "Looking to connect with fellow entrepreneurs", url: "https://www.reddit.com/r/Entrepreneur/comments/1rrftdv/looking_to_connect_with_fellow_entrepreneurs/", draftReply: "Building in the AI/automation space. Always down to connect with other founders."},
-                {subreddit: "Entrepreneur", title: "One 'amazing insight' is not enough to build a business...", url: "https://www.reddit.com/r/Entrepreneur/comments/1rr13iq/one_amazing_insight_is_not_enough_to_build_a/", draftReply: "Execution > Ideas. My 'insight' was that SEO agencies overcharge. The business is in the system I built to replace them."},
-                {subreddit: "Entrepreneur", title: "Promoting a supermarket?", url: "https://www.reddit.com/r/Entrepreneur/comments/1rqyj3y/promoting_a_supermarket/", draftReply: "Local SEO is everything for supermarkets. Google Business Profile, local keywords, review management. Can automate most of this."},
-                {subreddit: "Entrepreneur", title: "The grind and hustle isn't a flex! I almost killed my business by trying to be the hero.", url: "https://www.reddit.com/r/Entrepreneur/comments/1rqyfcl/the_grind_and_hustle_isnt_a_flex_i_almost_killed/", draftReply: "This. I automated 80% of my marketing with AI agents. Now I focus on strategy, not grunt work. Systems > Hustle."},
-                {subreddit: "Entrepreneur", title: "This sub taught me more about my business in one week than I learned in three months of building it", url: "https://www.reddit.com/r/Entrepreneur/comments/1rqpftc/this_sub_taught_me_more_about_my_business_in_one/", draftReply: "Same. The collective knowledge here is insane. Pay it forward when you can."},
-                {subreddit: "Entrepreneur", title: "How often do you audit the tools you're paying for?", url: "https://www.reddit.com/r/Entrepreneur/comments/1rqbqo6/how_often_do_you_audit_the_tools_youre_paying_for/", draftReply: "Monthly. Recently cut $2K/month SEO agency, replaced with $73/month AI setup. Audit everything."},
-                {subreddit: "Entrepreneur", title: "I think many ecommerce founders are solving the wrong problem first", url: "https://www.reddit.com/r/Entrepreneur/comments/1rpx3xv/i_think_many_ecommerce_founders_are_solving_the/", draftReply: "Most focus on product, not distribution. I built distribution (SEO/content) first, then product. Way easier."},
-                {subreddit: "Entrepreneur", title: "stopped spending on ads, focused on being everywhere instead - heres what happened", url: "https://www.reddit.com/r/Entrepreneur/comments/1rplp5m/stopped_spending_on_ads_focused_on_being/", draftReply: "Organic > Paid. I automated my 'being everywhere' with AI agents. Content at scale without the team."},
-                {subreddit: "SaaS", title: "Monitor r/SaaS for marketing/growth posts", url: "https://www.reddit.com/r/SaaS/search/?q=marketing&type=posts&sort=new", draftReply: "SaaS marketing is all about product-led growth + SEO. I automate content that drives product-qualified leads."},
-                {subreddit: "juststart", title: "Monitor r/juststart for SEO case studies", url: "https://www.reddit.com/r/juststart/search/?q=SEO&type=posts&sort=new", draftReply: "Love this sub. Documenting the journey is half the battle. I track all my SEO metrics automatically now."}
-            ];
+            // Generate 2 LinkedIn posts
+            const linkedin = [];
+            const linkedinIdx1 = dateSeed % linkedinTemplates.length;
+            const linkedinIdx2 = (dateSeed + 1) % linkedinTemplates.length;
             
-            renderEngageTweets(engageTweets);
-            renderEngageReddit(engageReddit);
+            linkedin.push({ ...linkedinTemplates[linkedinIdx1], id: 'linkedin-0', platform: 'LinkedIn', type: 'LinkedIn Post 1' });
+            linkedin.push({ ...linkedinTemplates[linkedinIdx2], id: 'linkedin-1', platform: 'LinkedIn', type: 'LinkedIn Post 2' });
+            
+            // Generate 20 tweet engagement targets
+            const engageTweets = generateTweetEngagements(dateSeed);
+            
+            // Generate 20 Reddit engagement targets
+            const engageReddit = generateRedditEngagements(dateSeed);
+            
+            currentTasks = { tweets, linkedin, engageTweets, engageReddit };
+            
+            localStorage.setItem('gtm-content', JSON.stringify(currentTasks));
+            localStorage.setItem('gtm-content-date', new Date().toDateString());
+            localStorage.setItem('gtm-progress', JSON.stringify({}));
+            
+            renderAllContent();
+            updateProgress();
         }
         
-        // Initialize with static content
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStaticContent();
-        });
+        function seededRandom(seed) {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+        
+        function generateTweetEngagements(seed) {
+            const handles = [
+                { handle: "@troyseo", niche: "SEO expert" },
+                { handle: "@naval", niche: "AI/tech philosopher" },
+                { handle: "@levelsio", niche: "Indie hacker" },
+                { handle: "@shreyas", niche: "Product leader" },
+                { handle: "@sama", niche: "OpenAI CEO" },
+                { handle: "@paulg", niche: "YC co-founder" },
+                { handle: "@jasonfried", niche: "Basecamp founder" },
+                { handle: "@dhh", niche: "Rails creator" },
+                { handle: "@elonmusk", niche: "Tech CEO" },
+                { handle: "@pmarca", niche: "VC/technologist" }
+            ];
+            
+            const topics = [
+                { topic: "AI automation", reply: "AI automation isn't the future, it's the present. Running marketing 24/7 without human bottlenecks." },
+                { topic: "SEO strategy", reply: "Built my own SEO stack for $73/month using APIs. Replaces $500+/month in subscriptions." },
+                { topic: "content marketing", reply: "Content at scale is now possible with AI. Generate 25+ pieces/month with 2 hours oversight." },
+                { topic: "startup growth", reply: "Distribution > Product. I built SEO/content systems first, then product. Way easier." },
+                { topic: "marketing efficiency", reply: "Replaced $2K/month agency with $73 AI setup. Same results, full transparency." }
+            ];
+            
+            const engagements = [];
+            for (let i = 0; i < 20; i++) {
+                const handleIdx = Math.floor(seededRandom(seed + i) * handles.length);
+                const topicIdx = Math.floor(seededRandom(seed + i + 50) * topics.length);
+                const handle = handles[handleIdx];
+                const topic = topics[topicIdx];
+                
+                engagements.push({
+                    id: `engage-tweet-${i}`,
+                    handle: handle.handle,
+                    url: `https://x.com/search?q=${encodeURIComponent(handle.handle + ' ' + topic.topic)}&f=live`,
+                    preview: `Recent post from ${handle.niche} about ${topic.topic}`,
+                    draftReply: topic.reply
+                });
+            }
+            return engagements;
+        }
+        
+        function generateRedditEngagements(seed) {
+            const subreddits = ["smallbusiness", "Entrepreneur", "SaaS", "juststart", "marketing", "startups"];
+            
+            const postTypes = [
+                { title: "How do I get more customers?", reply: "SEO can be a goldmine for organic customer acquisition. I automated mine with AI - happy to share the framework." },
+                { title: "Marketing on a budget?", reply: "Built my marketing system for $73/month using AI agents. Replaced a $2K agency." },
+                { title: "Should I hire a marketing agency?", reply: "Consider AI automation first. I get better results for 3% of the cost." },
+                { title: "Best way to generate leads?", reply: "SEO + content marketing. My best leads come from organic search, not paid ads." },
+                { title: "How to compete with big companies?", reply: "AI levels the playing field. Small teams can now compete on marketing automation." },
+                { title: "Content marketing tips?", reply: "Automate 80% of content creation with AI. Focus your time on strategy and engagement." },
+                { title: "SEO advice needed", reply: "Built an AI SEO agent that handles 24/7 monitoring. Happy to audit your setup." },
+                { title: "Growing without paid ads?", reply: "Organic growth through SEO. Takes 3-6 months but compounds forever." }
+            ];
+            
+            const engagements = [];
+            for (let i = 0; i < 20; i++) {
+                const subIdx = Math.floor(seededRandom(seed + i + 100) * subreddits.length);
+                const postIdx = Math.floor(seededRandom(seed + i + 150) * postTypes.length);
+                const subreddit = subreddits[subIdx];
+                const post = postTypes[postIdx];
+                
+                engagements.push({
+                    id: `engage-reddit-${i}`,
+                    subreddit: subreddit,
+                    title: post.title,
+                    url: `https://www.reddit.com/r/${subreddit}/search/?q=${encodeURIComponent(post.title)}&type=posts&sort=new`,
+                    draftReply: post.reply
+                });
+            }
+            return engagements;
+        }
+        
+        function renderAllContent() {
+            renderTweets(currentTasks.tweets);
+            renderLinkedIn(currentTasks.linkedin);
+            renderEngageTweets(currentTasks.engageTweets);
+            renderEngageReddit(currentTasks.engageReddit);
+        }
+        
+        function renderTweets(tweets) {
+            const container = document.getElementById('tweets-tab');
+            container.innerHTML = tweets.map(tweet => `
+                <div class="task-item" id="${tweet.id}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${tweet.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${tweet.type}</div>
+                            <div class="task-preview" style="white-space: pre-wrap;">${tweet.content}</div>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(tweet.content)}')">Copy Text</button>
+                        <button class="btn btn-secondary" onclick="window.open('https://x.com/compose/post', '_blank')">Open X</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderLinkedIn(posts) {
+            const container = document.getElementById('linkedin-tab');
+            container.innerHTML = posts.map(post => `
+                <div class="task-item" id="${post.id}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${post.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${post.type}</div>
+                            <div class="task-preview" style="white-space: pre-wrap;">${post.content.substring(0, 200)}...</div>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(post.content)}')">Copy Full Text</button>
+                        <button class="btn btn-secondary" onclick="window.open('https://www.linkedin.com/post/new', '_blank')">Open LinkedIn</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderEngageTweets(targets) {
+            const container = document.getElementById('engage-tweets-tab');
+            container.innerHTML = targets.map((target, i) => `
+                <div class="task-item" id="${target.id}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${target.handle}</div>
+                            <div class="task-preview">${target.preview}</div>
+                        </div>
+                    </div>
+                    <div class="draft-box">
+                        <div class="draft-label">Your Draft Reply</div>
+                        ${target.draftReply}
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(target.draftReply)}')">Copy Draft</button>
+                        <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Find Post</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderEngageReddit(targets) {
+            const container = document.getElementById('engage-reddit-tab');
+            container.innerHTML = targets.map((target, i) => `
+                <div class="task-item" id="${target.id}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">r/${target.subreddit}</div>
+                            <div class="task-preview">${target.title}</div>
+                        </div>
+                    </div>
+                    <div class="draft-box">
+                        <div class="draft-label">Your Draft Reply</div>
+                        ${target.draftReply}
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(target.draftReply)}')">Copy Draft</button>
+                        <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Find Post</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function toggleComplete(id, save = true) {
+            const item = document.getElementById(id);
+            const checkbox = item.querySelector('.checkbox');
+            
+            checkbox.classList.toggle('checked');
+            item.classList.toggle('completed');
+            
+            if (save) {
+                const progress = JSON.parse(localStorage.getItem('gtm-progress') || '{}');
+                progress[id] = checkbox.classList.contains('checked');
+                localStorage.setItem('gtm-progress', JSON.stringify(progress));
+                updateProgress();
+            }
+        }
+        
+        function markComplete(id, save = true) {
+            const item = document.getElementById(id);
+            if (!item) return;
+            
+            const checkbox = item.querySelector('.checkbox');
+            checkbox.classList.add('checked');
+            item.classList.add('completed');
+            
+            if (save) updateProgress();
+        }
+        
+        function updateProgress() {
+            const checked = document.querySelectorAll('.checkbox.checked').length;
+            const percentage = Math.round((checked / totalTasks) * 100);
+            
+            document.getElementById('progress-fill').style.width = percentage + '%';
+            document.getElementById('progress-fill').textContent = percentage + '%';
+            
+            const tweetsDone = document.querySelectorAll('#tweets-tab .checkbox.checked').length;
+            const linkedinDone = document.querySelectorAll('#linkedin-tab .checkbox.checked').length;
+            const tweetEngDone = document.querySelectorAll('#engage-tweets-tab .checkbox.checked').length;
+            const redditDone = document.querySelectorAll('#engage-reddit-tab .checkbox.checked').length;
+            
+            document.getElementById('stat-tweets').textContent = `${tweetsDone}/2`;
+            document.getElementById('stat-linkedin').textContent = `${linkedinDone}/2`;
+            document.getElementById('stat-tweet-eng').textContent = `${tweetEngDone}/20`;
+            document.getElementById('stat-reddit').textContent = `${redditDone}/20`;
+            
+            if (checked === totalTasks) {
+                document.getElementById('completion-message').classList.add('show');
+            } else {
+                document.getElementById('completion-message').classList.remove('show');
+            }
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(decodeURIComponent(text));
+        }
+        
+        function resetAllTasks() {
+            localStorage.removeItem('gtm-progress');
+            document.querySelectorAll('.checkbox').forEach(cb => cb.classList.remove('checked'));
+            document.querySelectorAll('.task-item').forEach(item => item.classList.remove('completed'));
+            updateProgress();
+        }
     </script>
 </body>
 </html>
