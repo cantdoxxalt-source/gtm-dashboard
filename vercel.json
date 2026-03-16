@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/daily-content/(.*)",
+      "dest": "/daily-content/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
