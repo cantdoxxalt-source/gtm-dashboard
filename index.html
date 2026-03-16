@@ -222,6 +222,14 @@
             margin-top: 15px;
         }
         .reset-btn:hover { background: #312e81; }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(100px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -259,16 +267,24 @@
     </button>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('tweets')">🐦 Tweets to Post (2)</button>
+        <button class="tab-btn active" onclick="showTab('tweets')">🐦 Tweets (2)</button>
         <button class="tab-btn" onclick="showTab('linkedin')">💼 LinkedIn (2)</button>
-        <button class="tab-btn" onclick="showTab('engage-tweets')">🎯 Engage Tweets (20)</button>
-        <button class="tab-btn" onclick="showTab('engage-reddit')">📱 Engage Reddit (20)</button>
+        <button class="tab-btn" onclick="showTab('engage-tweets')">🎯 Influencers (20)</button>
+        <button class="tab-btn" onclick="showTab('seo-questions')">❓ SEO Qs (15)</button>
+        <button class="tab-btn" onclick="showTab('ai-seo')">🤖 AI/LLM SEO (10)</button>
+        <button class="tab-btn" onclick="showTab('local-seo')">📍 Local SEO (10)</button>
+        <button class="tab-btn" onclick="showTab('tools')">🛠️ Tools (10)</button>
+        <button class="tab-btn" onclick="showTab('engage-reddit')">📱 Reddit (20)</button>
     </div>
     
     <div class="tab-content">
         <div id="tweets-tab" class="tab-panel active"></div>
         <div id="linkedin-tab" class="tab-panel"></div>
         <div id="engage-tweets-tab" class="tab-panel"></div>
+        <div id="seo-questions-tab" class="tab-panel"></div>
+        <div id="ai-seo-tab" class="tab-panel"></div>
+        <div id="local-seo-tab" class="tab-panel"></div>
+        <div id="tools-tab" class="tab-panel"></div>
         <div id="engage-reddit-tab" class="tab-panel"></div>
     </div>
     
@@ -280,17 +296,17 @@
     </div>
 
     <script>
-        // Content templates
+        // Content templates - March 13, 2026 Daily Pack
         const tweetTemplates = [
             { type: 'hot_take', templates: [
-                "SEO agencies are dying.\n\nNot because SEO is dead.\nBecause AI agents do it better, faster, cheaper.\n\nThe smart agencies pivot to strategy.\nThe rest become obsolete.\n\nWhich side are you on?",
                 "Your SEO agency charges $2K/month.\n\nMy AI agent costs $73.\n\nThey take 30 days to deliver.\nMy agent works 24/7.\n\nThey hide behind 'proprietary processes.'\nMy code is transparent.\n\nThe math is simple.",
+                "SEO agencies are dying.\n\nNot because SEO is dead.\nBecause AI agents do it better, faster, cheaper.\n\nThe smart agencies pivot to strategy.\nThe rest become obsolete.\n\nWhich side are you on?",
                 "Most founders waste $2K+/month on SEO agencies.\n\nI spend $73 on APIs.\n\nThe secret?\nAI agents handle execution.\nI focus on strategy.\n\nSystems > Hustle"
             ]},
             { type: 'educational', templates: [
                 "Here's how I cut SEO costs by 96%:\n\n❌ Before: $2K/month agency\n✅ After: $73/month APIs\n\nThe 5 tools I use:\n• DataForSEO\n• OpenAI API\n• SERP API\n• Make.com\n• Google Sheets\n\nThread 🧵",
-                "SEO in 2026:\n\n❌ Hiring expensive agencies\n❌ Manual keyword research\n❌ Guessing what works\n\n✅ AI agents that execute 24/7\n✅ Data-driven decisions\n✅ Predictable results\n\nThe shift is happening. Are you in?",
-                "Most people do SEO wrong.\n\nThey focus on tactics.\nI focus on systems.\n\nMy AI agent:\n• Finds keywords\n• Analyzes competitors\n• Creates briefs\n• Tracks rankings\n• Sends reports\n\nCost: $73/month\nMy time: 2 hrs/week"
+                "Most people do SEO wrong.\n\nThey focus on tactics.\nI focus on systems.\n\nMy AI agent:\n• Finds keywords\n• Analyzes competitors\n• Creates briefs\n• Tracks rankings\n• Sends reports\n\nCost: $73/month\nMy time: 2 hrs/week",
+                "SEO in 2026:\n\n❌ Hiring expensive agencies\n❌ Manual keyword research\n❌ Guessing what works\n\n✅ AI agents that execute 24/7\n✅ Data-driven decisions\n✅ Predictable results\n\nThe shift is happening. Are you in?"
             ]},
             { type: 'results', templates: [
                 "Results from my AI SEO agent (90 days):\n\n📈 3x organic traffic\n📈 47 new page 1 rankings\n📈 12 qualified demos\n\nCost: $73/month\nTime spent: 2 hrs/week\n\nROI: 27x\n\nSometimes less is more.",
@@ -299,6 +315,7 @@
             ]}
         ];
         
+        // LinkedIn templates - March 13, 2026 Daily Pack
         const linkedinTemplates = [
             { type: 'story', content: `I replaced a $2,000/month SEO agency with a $73/month AI agent.
 
@@ -371,36 +388,80 @@ The shift is happening. Which side are you on?` }
         ];
         
         let currentTasks = {};
-        const totalTasks = 44;
+        const totalTasks = 89;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             document.getElementById('current-date').textContent = today;
             
-            const savedDate = localStorage.getItem('gtm-content-date');
-            const savedContent = localStorage.getItem('gtm-content');
-            const savedProgress = localStorage.getItem('gtm-progress');
-            
-            if (savedDate === new Date().toDateString() && savedContent) {
-                currentTasks = JSON.parse(savedContent);
-                renderAllContent();
-                if (savedProgress) {
-                    const progress = JSON.parse(savedProgress);
-                    Object.keys(progress).forEach(id => {
-                        if (progress[id]) markComplete(id, false);
-                    });
-                }
-            } else {
-                generateDailyContent();
-            }
+            // Load fresh content from JSON file
+            loadFreshContent();
         });
         
+        async function loadFreshContent() {
+            try {
+                // Fetch fresh content from the generated JSON file
+                const response = await fetch('daily-content/content.json?t=' + Date.now());
+                
+                if (response.ok) {
+                    const freshContent = await response.json();
+                    console.log('Loaded fresh content for:', freshContent.date);
+                    
+                    // Use fresh content from JSON
+                    currentTasks = {
+                        tweets: freshContent.tweets || [],
+                        linkedin: freshContent.linkedin || [],
+                        engageTweets: generateTweetEngagements(),
+                        engageReddit: generateRedditEngagements(),
+                        seoQuestions: generateSEOQuestions(),
+                        aiSEO: generateAISEO(),
+                        localSEO: generateLocalSEO(),
+                        tools: generateTools()
+                    };
+                    
+                    // Update date display
+                    document.getElementById('current-date').textContent = new Date(freshContent.date).toLocaleDateString('en-US', { 
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                    });
+                } else {
+                    console.log('No fresh content found, using fallback');
+                    generateDailyContent();
+                    return;
+                }
+            } catch (error) {
+                console.error('Error loading fresh content:', error);
+                generateDailyContent();
+                return;
+            }
+            
+            // Check for saved progress
+            const savedDate = localStorage.getItem('gtm-content-date');
+            const savedProgress = localStorage.getItem('gtm-progress');
+            
+            if (savedDate === new Date().toDateString() && savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                Object.keys(progress).forEach(id => {
+                    if (progress[id]) markComplete(id, false);
+                });
+            } else {
+                // New day - reset progress
+                localStorage.setItem('gtm-progress', JSON.stringify({}));
+            }
+            
+            localStorage.setItem('gtm-content-date', new Date().toDateString());
+            localStorage.setItem('gtm-content', JSON.stringify(currentTasks));
+            
+            renderAllContent();
+            updateProgress();
+        }
+        
         function generateDailyContent() {
+            // Fallback: Generate from templates if JSON fetch fails
             const date = new Date();
             const dateSeed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
             
-            // Generate 2 unique tweets
+            // Generate 2 unique tweets from templates
             const tweets = [];
             const usedTemplates = new Set();
             
@@ -422,7 +483,7 @@ The shift is happening. Which side are you on?` }
                 });
             }
             
-            // Generate 2 LinkedIn posts
+            // Generate 2 LinkedIn posts from templates
             const linkedin = [];
             const linkedinIdx1 = dateSeed % linkedinTemplates.length;
             const linkedinIdx2 = (dateSeed + 1) % linkedinTemplates.length;
@@ -430,13 +491,15 @@ The shift is happening. Which side are you on?` }
             linkedin.push({ ...linkedinTemplates[linkedinIdx1], id: 'linkedin-0', platform: 'LinkedIn', type: 'LinkedIn Post 1' });
             linkedin.push({ ...linkedinTemplates[linkedinIdx2], id: 'linkedin-1', platform: 'LinkedIn', type: 'LinkedIn Post 2' });
             
-            // Generate 20 tweet engagement targets
-            const engageTweets = generateTweetEngagements(dateSeed);
+            // Generate engagement targets
+            const engageTweets = generateTweetEngagements();
+            const engageReddit = generateRedditEngagements();
+            const seoQuestions = generateSEOQuestions();
+            const aiSEO = generateAISEO();
+            const localSEO = generateLocalSEO();
+            const tools = generateTools();
             
-            // Generate 20 Reddit engagement targets
-            const engageReddit = generateRedditEngagements(dateSeed);
-            
-            currentTasks = { tweets, linkedin, engageTweets, engageReddit };
+            currentTasks = { tweets, linkedin, engageTweets, engageReddit, seoQuestions, aiSEO, localSEO, tools };
             
             localStorage.setItem('gtm-content', JSON.stringify(currentTasks));
             localStorage.setItem('gtm-content-date', new Date().toDateString());
@@ -451,75 +514,126 @@ The shift is happening. Which side are you on?` }
             return x - Math.floor(x);
         }
         
-        function generateTweetEngagements(seed) {
-            const handles = [
-                { handle: "@troyseo", niche: "SEO expert" },
-                { handle: "@naval", niche: "AI/tech philosopher" },
-                { handle: "@levelsio", niche: "Indie hacker" },
-                { handle: "@shreyas", niche: "Product leader" },
-                { handle: "@sama", niche: "OpenAI CEO" },
-                { handle: "@paulg", niche: "YC co-founder" },
-                { handle: "@jasonfried", niche: "Basecamp founder" },
-                { handle: "@dhh", niche: "Rails creator" },
-                { handle: "@elonmusk", niche: "Tech CEO" },
-                { handle: "@pmarca", niche: "VC/technologist" }
+        // Tweet engagements - Dynamic Daily Pack
+        function generateTweetEngagements() {
+            const engagements = [
+                { id: 'engage-tweet-0', handle: '@troyseo', niche: 'SEO expert', topic: 'AI automation', url: 'https://x.com/search?q=%40troyseo%20AI%20automation&f=live', draftReply: "AI automation isn't the future, it's the present. Running marketing 24/7 without human bottlenecks." },
+                { id: 'engage-tweet-1', handle: '@naval', niche: 'AI/tech philosopher', topic: 'AI automation', url: 'https://x.com/search?q=%40naval%20AI%20automation&f=live', draftReply: "AI automation isn't the future, it's the present. Running marketing 24/7 without human bottlenecks." },
+                { id: 'engage-tweet-2', handle: '@levelsio', niche: 'Indie hacker', topic: 'SEO strategy', url: 'https://x.com/search?q=%40levelsio%20SEO%20strategy&f=live', draftReply: "Built my own SEO stack for $73/month using APIs. Replaces $500+/month in subscriptions." },
+                { id: 'engage-tweet-3', handle: '@shreyas', niche: 'Product leader', topic: 'SEO strategy', url: 'https://x.com/search?q=%40shreyas%20SEO%20strategy&f=live', draftReply: "Built my own SEO stack for $73/month using APIs. Replaces $500+/month in subscriptions." },
+                { id: 'engage-tweet-4', handle: '@sama', niche: 'OpenAI CEO', topic: 'content marketing', url: 'https://x.com/search?q=%40sama%20content%20marketing&f=live', draftReply: "Content at scale is now possible with AI. Generate 25+ pieces/month with 2 hours oversight." },
+                { id: 'engage-tweet-5', handle: '@paulg', niche: 'YC co-founder', topic: 'startup growth', url: 'https://x.com/search?q=%40paulg%20startup%20growth&f=live', draftReply: "Distribution > Product. I built SEO/content systems first, then product. Way easier." },
+                { id: 'engage-tweet-6', handle: '@jasonfried', niche: 'Basecamp founder', topic: 'marketing efficiency', url: 'https://x.com/search?q=%40jasonfried%20marketing%20efficiency&f=live', draftReply: "Replaced $2K/month agency with $73 AI setup. Same results, full transparency." },
+                { id: 'engage-tweet-7', handle: '@dhh', niche: 'Rails creator', topic: 'marketing efficiency', url: 'https://x.com/search?q=%40dhh%20marketing%20efficiency&f=live', draftReply: "Replaced $2K/month agency with $73 AI setup. Same results, full transparency." },
+                { id: 'engage-tweet-8', handle: '@elonmusk', niche: 'Tech CEO', topic: 'content marketing', url: 'https://x.com/search?q=%40elonmusk%20content%20marketing&f=live', draftReply: "Content at scale is now possible with AI. Generate 25+ pieces/month with 2 hours oversight." },
+                { id: 'engage-tweet-9', handle: '@pmarca', niche: 'VC/technologist', topic: 'startup growth', url: 'https://x.com/search?q=%40pmarca%20startup%20growth&f=live', draftReply: "Distribution > Product. I built SEO/content systems first, then product. Way easier." },
+                { id: 'engage-tweet-10', handle: '@troyseo', niche: 'SEO expert', topic: 'SEO strategy', url: 'https://x.com/search?q=%40troyseo%20SEO%20strategy&f=live', draftReply: "Built my own SEO stack for $73/month using APIs. Replaces $500+/month in subscriptions." },
+                { id: 'engage-tweet-11', handle: '@naval', niche: 'AI/tech philosopher', topic: 'AI automation', url: 'https://x.com/search?q=%40naval%20automation&f=live', draftReply: "AI automation isn't the future, it's the present. Running marketing 24/7 without human bottlenecks." },
+                { id: 'engage-tweet-12', handle: '@levelsio', niche: 'Indie hacker', topic: 'startup growth', url: 'https://x.com/search?q=%40levelsio%20growth&f=live', draftReply: "Distribution > Product. I built SEO/content systems first, then product. Way easier." },
+                { id: 'engage-tweet-13', handle: '@shreyas', niche: 'Product leader', topic: 'content marketing', url: 'https://x.com/search?q=%40shreyas%20content&f=live', draftReply: "Content at scale is now possible with AI. Generate 25+ pieces/month with 2 hours oversight." },
+                { id: 'engage-tweet-14', handle: '@paulg', niche: 'YC co-founder', topic: 'marketing efficiency', url: 'https://x.com/search?q=%40paulg%20marketing&f=live', draftReply: "Replaced $2K/month agency with $73 AI setup. Same results, full transparency." },
+                { id: 'engage-tweet-15', handle: '@jasonfried', niche: 'Basecamp founder', topic: 'AI automation', url: 'https://x.com/search?q=%40jasonfried%20AI&f=live', draftReply: "AI automation isn't the future, it's the present. Running marketing 24/7 without human bottlenecks." },
+                { id: 'engage-tweet-16', handle: '@dhh', niche: 'Rails creator', topic: 'SEO strategy', url: 'https://x.com/search?q=%40dhh%20SEO&f=live', draftReply: "Built my own SEO stack for $73/month using APIs. Replaces $500+/month in subscriptions." },
+                { id: 'engage-tweet-17', handle: '@pmarca', niche: 'VC/technologist', topic: 'content marketing', url: 'https://x.com/search?q=%40pmarca%20content&f=live', draftReply: "Content at scale is now possible with AI. Generate 25+ pieces/month with 2 hours oversight." },
+                { id: 'engage-tweet-18', handle: '@troyseo', niche: 'SEO expert', topic: 'marketing efficiency', url: 'https://x.com/search?q=%40troyseo%20marketing&f=live', draftReply: "Replaced $2K/month agency with $73 AI setup. Same results, full transparency." },
+                { id: 'engage-tweet-19', handle: '@levelsio', niche: 'Indie hacker', topic: 'startup growth', url: 'https://x.com/search?q=%40levelsio%20indie&f=live', draftReply: "Distribution > Product. I built SEO/content systems first, then product. Way easier." }
             ];
-            
-            const topics = [
-                { topic: "AI automation", reply: "AI automation isn't the future, it's the present. Running marketing 24/7 without human bottlenecks." },
-                { topic: "SEO strategy", reply: "Built my own SEO stack for $73/month using APIs. Replaces $500+/month in subscriptions." },
-                { topic: "content marketing", reply: "Content at scale is now possible with AI. Generate 25+ pieces/month with 2 hours oversight." },
-                { topic: "startup growth", reply: "Distribution > Product. I built SEO/content systems first, then product. Way easier." },
-                { topic: "marketing efficiency", reply: "Replaced $2K/month agency with $73 AI setup. Same results, full transparency." }
-            ];
-            
-            const engagements = [];
-            for (let i = 0; i < 20; i++) {
-                const handleIdx = Math.floor(seededRandom(seed + i) * handles.length);
-                const topicIdx = Math.floor(seededRandom(seed + i + 50) * topics.length);
-                const handle = handles[handleIdx];
-                const topic = topics[topicIdx];
-                
-                engagements.push({
-                    id: `engage-tweet-${i}`,
-                    handle: handle.handle,
-                    url: `https://x.com/search?q=${encodeURIComponent(handle.handle + ' ' + topic.topic)}&f=live`,
-                    preview: `Recent post from ${handle.niche} about ${topic.topic}`,
-                    draftReply: topic.reply
-                });
-            }
             return engagements;
         }
         
-        function generateRedditEngagements(seed) {
-            const subreddits = ["smallbusiness", "Entrepreneur", "SaaS", "juststart", "marketing", "startups"];
-            
-            const postTypes = [
-                { title: "How do I get more customers?", reply: "SEO can be a goldmine for organic customer acquisition. I automated mine with AI - happy to share the framework." },
-                { title: "Marketing on a budget?", reply: "Built my marketing system for $73/month using AI agents. Replaced a $2K agency." },
-                { title: "Should I hire a marketing agency?", reply: "Consider AI automation first. I get better results for 3% of the cost." },
-                { title: "Best way to generate leads?", reply: "SEO + content marketing. My best leads come from organic search, not paid ads." },
-                { title: "How to compete with big companies?", reply: "AI levels the playing field. Small teams can now compete on marketing automation." },
-                { title: "Content marketing tips?", reply: "Automate 80% of content creation with AI. Focus your time on strategy and engagement." },
-                { title: "SEO advice needed", reply: "Built an AI SEO agent that handles 24/7 monitoring. Happy to audit your setup." },
-                { title: "Growing without paid ads?", reply: "Organic growth through SEO. Takes 3-6 months but compounds forever." }
+        // SEO Questions - Search & Reply
+        function generateSEOQuestions() {
+            return [
+                { id: 'seo-q-0', query: 'SEO help', url: 'https://x.com/search?q=SEO%20help&f=live', draftReply: "Common culprits: 1) Thin content, 2) Poor internal linking, 3) Slow page speed, 4) Missing schema. My AI agent audits all of these automatically. Want me to check your site?" },
+                { id: 'seo-q-1', query: 'SEO question', url: 'https://x.com/search?q=SEO%20question&f=live', draftReply: "Happy to help! What specifically are you struggling with? I built an AI agent that handles most SEO tasks — might have insights for your situation." },
+                { id: 'seo-q-2', query: 'how to rank on Google', url: 'https://x.com/search?q=how%20to%20rank%20on%20Google&f=live', draftReply: "Ranking = content quality + backlinks + technical SEO + user experience. My AI agent monitors all four pillars 24/7. Which area are you weakest in?" },
+                { id: 'seo-q-3', query: 'why is my site not ranking', url: 'https://x.com/search?q=why%20is%20my%20site%20not%20ranking&f=live', draftReply: "90% of ranking issues: 1) Content doesn't match search intent, 2) Weak backlink profile, 3) Technical blocks (robots.txt, canonicals), 4) Core Web Vitals. My AI agent diagnoses this in minutes." },
+                { id: 'seo-q-4', query: 'backlinks how to get', url: 'https://x.com/search?q=backlinks%20how%20to%20get&f=live', draftReply: "Quality > quantity. One DR 60+ link beats 100 low-quality ones. My AI agent tracks competitor backlinks and finds opportunities weekly. Happy to share the framework." },
+                { id: 'seo-q-5', query: 'keyword research help', url: 'https://x.com/search?q=keyword%20research%20help&f=live', draftReply: "Look for keywords where you can compete — check top 3 results' domain authority. My AI agent filters by KD score and maps content gaps automatically." },
+                { id: 'seo-q-6', query: 'SEO tips please', url: 'https://x.com/search?q=SEO%20tips%20please&f=live', draftReply: "3 tips that actually move the needle: 1) Target low-competition keywords first, 2) Cover topics comprehensively (2,000+ words), 3) Internal link aggressively. My AI agent automates all three." },
+                { id: 'seo-q-7', query: 'Google ranking dropped', url: 'https://x.com/search?q=Google%20ranking%20dropped&f=live', draftReply: "Check: 1) Algorithm update timing, 2) Technical issues in GSC, 3) Competitor content improvements, 4) Lost backlinks. My AI agent monitors GSC daily and alerts me to drops immediately." },
+                { id: 'seo-q-8', query: 'site audit help', url: 'https://x.com/search?q=site%20audit%20help&f=live', draftReply: "90% of technical issues: robots.txt blocking, missing sitemaps, canonical errors, or Core Web Vitals. My AI agent runs weekly audits and flags issues before they hurt rankings." },
+                { id: 'seo-q-9', query: 'technical SEO issue', url: 'https://x.com/search?q=technical%20SEO%20issue&f=live', draftReply: "Common tech issues: crawl errors, index bloat, hreflang problems, schema errors. My AI agent catches these automatically. Want me to audit your site?" },
+                { id: 'seo-q-10', query: 'content strategy help', url: 'https://x.com/search?q=content%20strategy%20help&f=live', draftReply: "Content that ranks = search intent + comprehensive coverage + internal linking. My AI agent creates briefs mapping exactly what top 3 results cover — then finds the gaps." },
+                { id: 'seo-q-11', query: 'competitor analysis SEO', url: 'https://x.com/search?q=competitor%20analysis%20SEO&f=live', draftReply: "Reverse-engineer what works: their top pages, backlink sources, content gaps. My AI agent tracks 5 competitors weekly and alerts me to new opportunities." },
+                { id: 'seo-q-12', query: 'ecommerce SEO help', url: 'https://x.com/search?q=ecommerce%20SEO%20help&f=live', draftReply: "Ecommerce SEO = category optimization + product schema + review generation + internal linking. My AI agent monitors thousands of product keywords automatically." },
+                { id: 'seo-q-13', query: 'SaaS SEO strategy', url: 'https://x.com/search?q=SaaS%20SEO%20strategy&f=live', draftReply: "SaaS SEO playbook: comparison pages ('vs' keywords), alternative pages, use-case content, integration guides. My AI agent finds all these opportunities." },
+                { id: 'seo-q-14', query: 'B2B SEO tips', url: 'https://x.com/search?q=B2B%20SEO%20tips&f=live', draftReply: "B2B SEO = long sales cycle content. Target awareness → consideration → decision stages. My AI agent maps the full funnel and identifies gaps." }
             ];
-            
-            const engagements = [];
-            for (let i = 0; i < 20; i++) {
-                const subIdx = Math.floor(seededRandom(seed + i + 100) * subreddits.length);
-                const postIdx = Math.floor(seededRandom(seed + i + 150) * postTypes.length);
-                const subreddit = subreddits[subIdx];
-                const post = postTypes[postIdx];
-                
-                engagements.push({
-                    id: `engage-reddit-${i}`,
-                    subreddit: subreddit,
-                    title: post.title,
-                    url: `https://www.reddit.com/r/${subreddit}/search/?q=${encodeURIComponent(post.title)}&type=posts&sort=new`,
-                    draftReply: post.reply
-                });
-            }
+        }
+        
+        // AI/LLM SEO - Search & Reply
+        function generateAISEO() {
+            return [
+                { id: 'ai-seo-0', query: 'AI SEO', url: 'https://x.com/search?q=AI%20SEO&f=live', draftReply: "AI SEO is the next frontier. It's not just Google anymore — it's ChatGPT, Perplexity, Claude. My AI agent optimizes for both traditional search AND AI visibility." },
+                { id: 'ai-seo-1', query: 'LLM SEO', url: 'https://x.com/search?q=LLM%20SEO&f=live', draftReply: "LLM SEO = structured data + entity optimization + authoritative citations. AI assistants pull from sources they trust. My agent identifies what LLMs need to cite you." },
+                { id: 'ai-seo-2', query: 'ChatGPT SEO', url: 'https://x.com/search?q=ChatGPT%20SEO&f=live', draftReply: "To rank in ChatGPT answers: 1) Be cited by authoritative sources, 2) Clear entity recognition, 3) Structured data. My AI agent tracks brand mentions across LLMs." },
+                { id: 'ai-seo-3', query: 'AI content SEO', url: 'https://x.com/search?q=AI%20content%20SEO&f=live', draftReply: "AI content works IF you edit for E-E-A-T signals. My workflow: AI generates draft → human adds expertise → AI optimizes for SEO. Best of both worlds." },
+                { id: 'ai-seo-4', query: 'how to rank in ChatGPT', url: 'https://x.com/search?q=how%20to%20rank%20in%20ChatGPT&f=live', draftReply: "ChatGPT pulls from sources with high authority + clear entity recognition. Get cited by Wikipedia, major publications, and academic sources. My agent monitors brand mentions." },
+                { id: 'ai-seo-5', query: 'Perplexity SEO', url: 'https://x.com/search?q=Perplexity%20SEO&f=live', draftReply: "Perplexity cites sources with strong domain authority + recency. News sites, research papers, and authoritative blogs win. My AI agent tracks Perplexity citations." },
+                { id: 'ai-seo-6', query: 'AI search optimization', url: 'https://x.com/search?q=AI%20search%20optimization&f=live', draftReply: "AI search optimization = entity SEO + authoritative citations + structured data. The game is changing fast. My agent optimizes for both Google AND AI assistants." },
+                { id: 'ai-seo-7', query: 'generative AI visibility', url: 'https://x.com/search?q=generative%20AI%20visibility&f=live', draftReply: "Generative AI pulls from trusted sources. Build authority through citations, mentions, and clear entity markup. My AI agent tracks visibility across ChatGPT, Claude, and Perplexity." },
+                { id: 'ai-seo-8', query: 'AI agents marketing', url: 'https://x.com/search?q=AI%20agents%20marketing&f=live', draftReply: "AI agents are replacing marketing teams. Mine handles keyword research, competitor tracking, content briefs, and technical audits — all for $73/month. Humans focus on strategy." },
+                { id: 'ai-seo-9', query: 'AI SEO tools', url: 'https://x.com/search?q=AI%20SEO%20tools&f=live', draftReply: "Best AI SEO stack: DataForSEO (data) + OpenAI (analysis) + Make.com (automation). Total: $73/month. Replaced my $2K agency. My AI agent runs 24/7." }
+            ];
+        }
+        
+        // Local SEO - Search & Reply
+        function generateLocalSEO() {
+            return [
+                { id: 'local-0', query: 'local SEO help', url: 'https://x.com/search?q=local%20SEO%20help&f=live', draftReply: "Local SEO is a goldmine — 46% of searches are local. Key moves: 1) GBP optimization, 2) Local citations, 3) Review generation, 4) Location pages. My AI agent monitors local rankings daily." },
+                { id: 'local-1', query: 'Google Business Profile optimization', url: 'https://x.com/search?q=Google%20Business%20Profile%20optimization&f=live', draftReply: "GBP optimization: 1) Complete every field, 2) Post weekly updates, 3) Add photos monthly, 4) Respond to all reviews, 5) Use Q&A section. My AI agent tracks GBP insights." },
+                { id: 'local-2', query: 'rank in Google Maps', url: 'https://x.com/search?q=rank%20in%20Google%20Maps&f=live', draftReply: "Maps ranking = proximity + relevance + prominence. Optimize your GBP, get reviews, build local citations. My AI agent tracks your Maps position vs competitors." },
+                { id: 'local-3', query: 'local business SEO', url: 'https://x.com/search?q=local%20business%20SEO&f=live', draftReply: "Local SEO ROI is insane — 78% of local mobile searches result in offline purchases. My AI agent monitors local rankings and alerts me to changes. Worth the investment." },
+                { id: 'local-4', query: 'how to get more local customers', url: 'https://x.com/search?q=how%20to%20get%20more%20local%20customers&f=live', draftReply: "Local customer acquisition: 1) Rank in Maps pack, 2) Build 50+ citations, 3) Generate 10+ reviews/month, 4) Create neighborhood landing pages. My AI agent automates monitoring." },
+                { id: 'local-5', query: 'local citations SEO', url: 'https://x.com/search?q=local%20citations%20SEO&f=live', draftReply: "Citations = mentions of NAP (Name, Address, Phone) across the web. Key sites: Yelp, BBB, industry directories. Consistency is key. My AI agent tracks citation health." },
+                { id: 'local-6', query: 'Google reviews help', url: 'https://x.com/search?q=Google%20reviews%20help&f=live', draftReply: "Reviews = 15% of local ranking factors. Aim for 10+ new reviews/month. Respond to every review (good and bad). My AI agent monitors review velocity and sentiment." },
+                { id: 'local-7', query: 'local SEO for dentists', url: 'https://x.com/search?q=local%20SEO%20for%20dentists&f=live', draftReply: "Local SEO for dentists: 1) Optimize for 'dentist near me', 2) Get patient reviews, 3) Create service pages (implants, Invisalign, etc.), 4) Build local citations. My AI agent tracks it all." },
+                { id: 'local-8', query: 'local SEO for lawyers', url: 'https://x.com/search?q=local%20SEO%20for%20lawyers&f=live', draftReply: "Legal local SEO is competitive. Focus on: 1) Practice area + city pages, 2) Avvo/Martindale profiles, 3) Client reviews, 4) Schema markup. My AI agent monitors competitor moves." },
+                { id: 'local-9', query: 'multi-location SEO', url: 'https://x.com/search?q=multi-location%20SEO&f=live', draftReply: "Multi-location SEO: unique content for each location, separate GBPs, location-specific schema, local link building. My AI agent scales this across all locations automatically." }
+            ];
+        }
+        
+        // Tools & Alternatives - Search & Reply
+        function generateTools() {
+            return [
+                { id: 'tools-0', query: 'SEO tools recommendation', url: 'https://x.com/search?q=SEO%20tools%20recommendation&f=live', draftReply: "Stack I use: DataForSEO (data), OpenAI (analysis), Make.com (automation), Google Sheets (reporting). Total: $73/month. Replaced my $2K agency." },
+                { id: 'tools-1', query: 'Ahrefs alternative', url: 'https://x.com/search?q=Ahrefs%20alternative&f=live', draftReply: "Ahrefs is great but expensive. I built an AI agent using DataForSEO API — same data, 1/10th the cost, runs 24/7. Happy to share the setup." },
+                { id: 'tools-2', query: 'Semrush vs Ahrefs', url: 'https://x.com/search?q=Semrush%20vs%20Ahrefs&f=live', draftReply: "Both are solid. I used both, then built my own AI agent with APIs. Now I pay $73/month instead of $200+ and get better insights. Sometimes the best tool is the one you build." },
+                { id: 'tools-3', query: 'best SEO software 2026', url: 'https://x.com/search?q=best%20SEO%20software%202026&f=live', draftReply: "2026 SEO stack: AI agents > traditional tools. Mine runs on DataForSEO + OpenAI APIs. Monitors keywords, competitors, technical issues 24/7. $73/month." },
+                { id: 'tools-4', query: 'SEO automation tools', url: 'https://x.com/search?q=SEO%20automation%20tools&f=live', draftReply: "Automate the repetitive: keyword tracking, competitor monitoring, content briefs, technical audits. My AI agent does all of this while I focus on strategy." },
+                { id: 'tools-5', query: 'free SEO tools', url: 'https://x.com/search?q=free%20SEO%20tools&f=live', draftReply: "Free tools: Google Search Console, GA4, Screaming Frog (500 URLs), AnswerThePublic (limited). But if you're serious, my $73/month AI agent replaces $500+ in tools." },
+                { id: 'tools-6', query: 'SEO agency vs in-house', url: 'https://x.com/search?q=SEO%20agency%20vs%20in-house&f=live', draftReply: "Third option: AI agent. I replaced a $2K/month agency with $73 in APIs. Same results, full transparency, runs 24/7. Best of both worlds." },
+                { id: 'tools-7', query: 'hire SEO agency or not', url: 'https://x.com/search?q=hire%20SEO%20agency%20or%20not&f=live', draftReply: "Consider building an AI agent instead. I replaced my $2K/month agency with $73 in APIs. Same results, full transparency, runs 24/7. Agencies charge for manual work AI does better." },
+                { id: 'tools-8', query: 'DIY SEO vs agency', url: 'https://x.com/search?q=DIY%20SEO%20vs%20agency&f=live', draftReply: "DIY with AI assistance is the sweet spot. My AI agent handles execution (keyword tracking, competitor analysis, content briefs). I focus on strategy. $73/month." },
+                { id: 'tools-9', query: 'SEO agency expensive', url: 'https://x.com/search?q=SEO%20agency%20expensive&f=live', draftReply: "Agencies charge $2K+ for $200 in tools + manual work. AI eliminates the manual work. I built an agent that does what my agency did, for 3% of the cost." }
+            ];
+        }
+        
+        // Reddit engagements - Dynamic Daily Pack
+        function generateRedditEngagements() {
+            const engagements = [
+                { id: 'engage-reddit-0', subreddit: 'smallbusiness', title: 'How do I get more customers?', url: 'https://www.reddit.com/r/smallbusiness/search/?q=How%20do%20I%20get%20more%20customers&type=posts&sort=new', draftReply: "SEO can be a goldmine for organic customer acquisition. I automated mine with AI - happy to share the framework." },
+                { id: 'engage-reddit-1', subreddit: 'smallbusiness', title: 'Marketing on a budget?', url: 'https://www.reddit.com/r/smallbusiness/search/?q=Marketing%20on%20a%20budget&type=posts&sort=new', draftReply: "Built my marketing system for $73/month using AI agents. Replaced a $2K agency." },
+                { id: 'engage-reddit-2', subreddit: 'smallbusiness', title: 'Should I hire a marketing agency?', url: 'https://www.reddit.com/r/smallbusiness/search/?q=Should%20I%20hire%20a%20marketing%20agency&type=posts&sort=new', draftReply: "Consider AI automation first. I get better results for 3% of the cost." },
+                { id: 'engage-reddit-3', subreddit: 'smallbusiness', title: 'Best way to generate leads?', url: 'https://www.reddit.com/r/smallbusiness/search/?q=Best%20way%20to%20generate%20leads&type=posts&sort=new', draftReply: "SEO + content marketing. My best leads come from organic search, not paid ads." },
+                { id: 'engage-reddit-4', subreddit: 'Entrepreneur', title: 'How to compete with big companies?', url: 'https://www.reddit.com/r/Entrepreneur/search/?q=How%20to%20compete%20with%20big%20companies&type=posts&sort=new', draftReply: "AI levels the playing field. Small teams can now compete on marketing automation." },
+                { id: 'engage-reddit-5', subreddit: 'Entrepreneur', title: 'Content marketing tips?', url: 'https://www.reddit.com/r/Entrepreneur/search/?q=Content%20marketing%20tips&type=posts&sort=new', draftReply: "Automate 80% of content creation with AI. Focus your time on strategy and engagement." },
+                { id: 'engage-reddit-6', subreddit: 'Entrepreneur', title: 'SEO advice needed', url: 'https://www.reddit.com/r/Entrepreneur/search/?q=SEO%20advice%20needed&type=posts&sort=new', draftReply: "Built an AI SEO agent that handles 24/7 monitoring. Happy to audit your setup." },
+                { id: 'engage-reddit-7', subreddit: 'Entrepreneur', title: 'Growing without paid ads?', url: 'https://www.reddit.com/r/Entrepreneur/search/?q=Growing%20without%20paid%20ads&type=posts&sort=new', draftReply: "Organic growth through SEO. Takes 3-6 months but compounds forever." },
+                { id: 'engage-reddit-8', subreddit: 'SaaS', title: 'How do I get more customers?', url: 'https://www.reddit.com/r/SaaS/search/?q=How%20do%20I%20get%20more%20customers&type=posts&sort=new', draftReply: "SEO can be a goldmine for organic customer acquisition. I automated mine with AI - happy to share the framework." },
+                { id: 'engage-reddit-9', subreddit: 'SaaS', title: 'Marketing on a budget?', url: 'https://www.reddit.com/r/SaaS/search/?q=Marketing%20on%20a%20budget&type=posts&sort=new', draftReply: "Built my marketing system for $73/month using AI agents. Replaced a $2K agency." },
+                { id: 'engage-reddit-10', subreddit: 'SaaS', title: 'Should I hire a marketing agency?', url: 'https://www.reddit.com/r/SaaS/search/?q=Should%20I%20hire%20a%20marketing%20agency&type=posts&sort=new', draftReply: "Consider AI automation first. I get better results for 3% of the cost." },
+                { id: 'engage-reddit-11', subreddit: 'juststart', title: 'Best way to generate leads?', url: 'https://www.reddit.com/r/juststart/search/?q=Best%20way%20to%20generate%20leads&type=posts&sort=new', draftReply: "SEO + content marketing. My best leads come from organic search, not paid ads." },
+                { id: 'engage-reddit-12', subreddit: 'juststart', title: 'How to compete with big companies?', url: 'https://www.reddit.com/r/juststart/search/?q=How%20to%20compete%20with%20big%20companies&type=posts&sort=new', draftReply: "AI levels the playing field. Small teams can now compete on marketing automation." },
+                { id: 'engage-reddit-13', subreddit: 'juststart', title: 'Content marketing tips?', url: 'https://www.reddit.com/r/juststart/search/?q=Content%20marketing%20tips&type=posts&sort=new', draftReply: "Automate 80% of content creation with AI. Focus your time on strategy and engagement." },
+                { id: 'engage-reddit-14', subreddit: 'marketing', title: 'SEO advice needed', url: 'https://www.reddit.com/r/marketing/search/?q=SEO%20advice%20needed&type=posts&sort=new', draftReply: "Built an AI SEO agent that handles 24/7 monitoring. Happy to audit your setup." },
+                { id: 'engage-reddit-15', subreddit: 'marketing', title: 'Growing without paid ads?', url: 'https://www.reddit.com/r/marketing/search/?q=Growing%20without%20paid%20ads&type=posts&sort=new', draftReply: "Organic growth through SEO. Takes 3-6 months but compounds forever." },
+                { id: 'engage-reddit-16', subreddit: 'marketing', title: 'How do I get more customers?', url: 'https://www.reddit.com/r/marketing/search/?q=How%20do%20I%20get%20more%20customers&type=posts&sort=new', draftReply: "SEO can be a goldmine for organic customer acquisition. I automated mine with AI - happy to share the framework." },
+                { id: 'engage-reddit-17', subreddit: 'startups', title: 'Marketing on a budget?', url: 'https://www.reddit.com/r/startups/search/?q=Marketing%20on%20a%20budget&type=posts&sort=new', draftReply: "Built my marketing system for $73/month using AI agents. Replaced a $2K agency." },
+                { id: 'engage-reddit-18', subreddit: 'startups', title: 'Should I hire a marketing agency?', url: 'https://www.reddit.com/r/startups/search/?q=Should%20I%20hire%20a%20marketing%20agency&type=posts&sort=new', draftReply: "Consider AI automation first. I get better results for 3% of the cost." },
+                { id: 'engage-reddit-19', subreddit: 'startups', title: 'Best way to generate leads?', url: 'https://www.reddit.com/r/startups/search/?q=Best%20way%20to%20generate%20leads&type=posts&sort=new', draftReply: "SEO + content marketing. My best leads come from organic search, not paid ads." }
+            ];
             return engagements;
         }
         
@@ -527,13 +641,17 @@ The shift is happening. Which side are you on?` }
             renderTweets(currentTasks.tweets);
             renderLinkedIn(currentTasks.linkedin);
             renderEngageTweets(currentTasks.engageTweets);
+            renderSEOQuestions(currentTasks.seoQuestions);
+            renderAISEO(currentTasks.aiSEO);
+            renderLocalSEO(currentTasks.localSEO);
+            renderTools(currentTasks.tools);
             renderEngageReddit(currentTasks.engageReddit);
         }
         
         function renderTweets(tweets) {
             const container = document.getElementById('tweets-tab');
             container.innerHTML = tweets.map(tweet => `
-                <div class="task-item" id="${tweet.id}">
+                <div class="task-item" id="${tweet.id}" data-content="${encodeURIComponent(tweet.content)}">
                     <div class="task-header">
                         <div class="checkbox" onclick="toggleComplete('${tweet.id}')"></div>
                         <div class="task-content">
@@ -542,7 +660,7 @@ The shift is happening. Which side are you on?` }
                         </div>
                     </div>
                     <div class="task-actions">
-                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(tweet.content)}')">Copy Text</button>
+                        <button class="btn btn-primary" onclick="copyFromElement('${tweet.id}')">Copy Text</button>
                         <button class="btn btn-secondary" onclick="window.open('https://x.com/compose/post', '_blank')">Open X</button>
                     </div>
                 </div>
@@ -552,7 +670,7 @@ The shift is happening. Which side are you on?` }
         function renderLinkedIn(posts) {
             const container = document.getElementById('linkedin-tab');
             container.innerHTML = posts.map(post => `
-                <div class="task-item" id="${post.id}">
+                <div class="task-item" id="${post.id}" data-content="${encodeURIComponent(post.content)}">
                     <div class="task-header">
                         <div class="checkbox" onclick="toggleComplete('${post.id}')"></div>
                         <div class="task-content">
@@ -561,7 +679,7 @@ The shift is happening. Which side are you on?` }
                         </div>
                     </div>
                     <div class="task-actions">
-                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(post.content)}')">Copy Full Text</button>
+                        <button class="btn btn-primary" onclick="copyFromElement('${post.id}')">Copy Full Text</button>
                         <button class="btn btn-secondary" onclick="window.open('https://www.linkedin.com/post/new', '_blank')">Open LinkedIn</button>
                     </div>
                 </div>
@@ -571,12 +689,12 @@ The shift is happening. Which side are you on?` }
         function renderEngageTweets(targets) {
             const container = document.getElementById('engage-tweets-tab');
             container.innerHTML = targets.map((target, i) => `
-                <div class="task-item" id="${target.id}">
+                <div class="task-item" id="${target.id}" data-content="${encodeURIComponent(target.draftReply)}">
                     <div class="task-header">
                         <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
                         <div class="task-content">
                             <div class="task-title">${target.handle}</div>
-                            <div class="task-preview">${target.preview}</div>
+                            <div class="task-preview">${target.niche} • ${target.topic}</div>
                         </div>
                     </div>
                     <div class="draft-box">
@@ -584,8 +702,100 @@ The shift is happening. Which side are you on?` }
                         ${target.draftReply}
                     </div>
                     <div class="task-actions">
-                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(target.draftReply)}')">Copy Draft</button>
+                        <button class="btn btn-primary" onclick="copyFromElement('${target.id}')">Copy Draft</button>
                         <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Find Post</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderSEOQuestions(targets) {
+            const container = document.getElementById('seo-questions-tab');
+            container.innerHTML = targets.map(target => `
+                <div class="task-item" id="${target.id}" data-content="${encodeURIComponent(target.draftReply)}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${target.query}</div>
+                            <div class="task-preview">Search for people asking about ${target.query.toLowerCase()}</div>
+                        </div>
+                    </div>
+                    <div class="draft-box">
+                        <div class="draft-label">Your Draft Reply</div>
+                        ${target.draftReply}
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyFromElement('${target.id}')">Copy Draft</button>
+                        <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Search X</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderAISEO(targets) {
+            const container = document.getElementById('ai-seo-tab');
+            container.innerHTML = targets.map(target => `
+                <div class="task-item" id="${target.id}" data-content="${encodeURIComponent(target.draftReply)}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${target.query}</div>
+                            <div class="task-preview">People asking about ${target.query}</div>
+                        </div>
+                    </div>
+                    <div class="draft-box">
+                        <div class="draft-label">Your Draft Reply</div>
+                        ${target.draftReply}
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyFromElement('${target.id}')">Copy Draft</button>
+                        <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Search X</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderLocalSEO(targets) {
+            const container = document.getElementById('local-seo-tab');
+            container.innerHTML = targets.map(target => `
+                <div class="task-item" id="${target.id}" data-content="${encodeURIComponent(target.draftReply)}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${target.query}</div>
+                            <div class="task-preview">Local business owners asking about ${target.query.toLowerCase()}</div>
+                        </div>
+                    </div>
+                    <div class="draft-box">
+                        <div class="draft-label">Your Draft Reply</div>
+                        ${target.draftReply}
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyFromElement('${target.id}')">Copy Draft</button>
+                        <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Search X</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderTools(targets) {
+            const container = document.getElementById('tools-tab');
+            container.innerHTML = targets.map(target => `
+                <div class="task-item" id="${target.id}" data-content="${encodeURIComponent(target.draftReply)}">
+                    <div class="task-header">
+                        <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${target.query}</div>
+                            <div class="task-preview">People comparing tools or asking for recommendations</div>
+                        </div>
+                    </div>
+                    <div class="draft-box">
+                        <div class="draft-label">Your Draft Reply</div>
+                        ${target.draftReply}
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" onclick="copyFromElement('${target.id}')">Copy Draft</button>
+                        <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Search X</button>
                     </div>
                 </div>
             `).join('');
@@ -594,7 +804,7 @@ The shift is happening. Which side are you on?` }
         function renderEngageReddit(targets) {
             const container = document.getElementById('engage-reddit-tab');
             container.innerHTML = targets.map((target, i) => `
-                <div class="task-item" id="${target.id}">
+                <div class="task-item" id="${target.id}" data-content="${encodeURIComponent(target.draftReply)}">
                     <div class="task-header">
                         <div class="checkbox" onclick="toggleComplete('${target.id}')"></div>
                         <div class="task-content">
@@ -607,7 +817,7 @@ The shift is happening. Which side are you on?` }
                         ${target.draftReply}
                     </div>
                     <div class="task-actions">
-                        <button class="btn btn-primary" onclick="copyToClipboard('${encodeURIComponent(target.draftReply)}')">Copy Draft</button>
+                        <button class="btn btn-primary" onclick="copyFromElement('${target.id}')">Copy Draft</button>
                         <button class="btn btn-secondary" onclick="window.open('${target.url}', '_blank')">Find Post</button>
                     </div>
                 </div>
@@ -650,6 +860,7 @@ The shift is happening. Which side are you on?` }
         
         function updateProgress() {
             const checked = document.querySelectorAll('.checkbox.checked').length;
+            const totalTasks = 89; // Updated total
             const percentage = Math.round((checked / totalTasks) * 100);
             
             document.getElementById('progress-fill').style.width = percentage + '%';
@@ -658,11 +869,15 @@ The shift is happening. Which side are you on?` }
             const tweetsDone = document.querySelectorAll('#tweets-tab .checkbox.checked').length;
             const linkedinDone = document.querySelectorAll('#linkedin-tab .checkbox.checked').length;
             const tweetEngDone = document.querySelectorAll('#engage-tweets-tab .checkbox.checked').length;
+            const seoQDone = document.querySelectorAll('#seo-questions-tab .checkbox.checked').length;
+            const aiSEODone = document.querySelectorAll('#ai-seo-tab .checkbox.checked').length;
+            const localSEODone = document.querySelectorAll('#local-seo-tab .checkbox.checked').length;
+            const toolsDone = document.querySelectorAll('#tools-tab .checkbox.checked').length;
             const redditDone = document.querySelectorAll('#engage-reddit-tab .checkbox.checked').length;
             
             document.getElementById('stat-tweets').textContent = `${tweetsDone}/2`;
             document.getElementById('stat-linkedin').textContent = `${linkedinDone}/2`;
-            document.getElementById('stat-tweet-eng').textContent = `${tweetEngDone}/20`;
+            document.getElementById('stat-tweet-eng').textContent = `${tweetEngDone + seoQDone + aiSEODone + localSEODone + toolsDone}/65`;
             document.getElementById('stat-reddit').textContent = `${redditDone}/20`;
             
             if (checked === totalTasks) {
@@ -672,8 +887,81 @@ The shift is happening. Which side are you on?` }
             }
         }
         
+        function copyFromElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                console.error('Element not found:', elementId);
+                return;
+            }
+            const encodedText = element.getAttribute('data-content');
+            if (!encodedText) {
+                console.error('No data-content attribute found on element:', elementId);
+                return;
+            }
+            copyToClipboard(encodedText);
+        }
+
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(decodeURIComponent(text));
+            const decodedText = decodeURIComponent(text);
+
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(decodedText).then(() => {
+                    showCopyFeedback();
+                }).catch(err => {
+                    console.error('Clipboard API failed:', err);
+                    fallbackCopy(decodedText);
+                });
+            } else {
+                fallbackCopy(decodedText);
+            }
+        }
+        
+        function fallbackCopy(text) {
+            // Create temporary textarea for older browsers/non-secure contexts
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopyFeedback();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                alert('Copy failed. Please select and copy manually.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+        
+        function showCopyFeedback() {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.textContent = '✓ Copied to clipboard!';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #22c55e;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 1000;
+                animation: slideUp 0.3s ease;
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideDown 0.3s ease';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 2000);
         }
         
         function resetAllTasks() {
